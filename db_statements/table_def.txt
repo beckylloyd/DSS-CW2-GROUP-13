@@ -1,0 +1,35 @@
+-- USERS --
+CREATE TABLE IF NOT EXISTS users (
+user_id integer PRIMARY KEY,
+username text NOT NULL UNIQUE,
+password blob NOT NULL 
+)WITHOUT ROWID;
+
+
+-- TAGS --
+CREATE TABLE IF NOT EXISTS tags (
+tag_id integer PRIMARY KEY,
+name text NOT NULL UNIQUE
+) WITHOUT ROWID;
+
+
+-- POSTS --
+CREATE TABLE IF NOT EXISTS posts (
+post_id integer PRIMARY KEY,
+title text NOT NULL,
+body text NOT NULL,
+date blob NOT NULL,
+time blob NOT NULL,
+tag_id integer, 
+user_id integer,
+FOREIGN KEY (tag_id)
+	REFERENCES tags(tag_id)
+	ON DELETE RESTRICT
+	ON UPDATE CASCADE,
+FOREIGN KEY (user_id)
+	REFERENCES users(user_id)
+	ON DELETE RESTRICT 
+	ON UPDATE CASCADE
+) WITHOUT ROWID;
+
+

@@ -2,7 +2,31 @@
 
 {% block content %}
 <div class="container">
-<h3>{% block title %}Home{% endblock %}</h3>
-<p>Hello, LEGO!</p>
+    <h3>{% block title %}Home{% endblock %}</h3>
+    <br>
+    <h5> Popular Posts </h5>
+
+    <table class="table-bordered" cellpadding="5px">
+        <tr>
+            {% for col in col_names %}
+            <th>
+                {{col}}
+            </th>
+            {% endfor %}
+
+        </tr>
+        {% for row in rows %}
+        <tr>
+            {% for item in row%}
+            <td>
+                {{item}}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+
+
+    <br>
 </div>
 {% endblock %}

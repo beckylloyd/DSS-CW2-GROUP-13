@@ -2,7 +2,20 @@
 
 {% block content %}
 <div class="container">
-<h3>{% block title %}Log In{% endblock %}</h3>
-<p>LOG IN!!!!</p>
+    <h3>{% block title %}Log In{% endblock %}</h3>
+    <br>
+    <form class="form-inline" action="userLogIn" method="post">
+        <div class="form-group">
+            <h6><label for="uname">Username: </label></h6>
+            <input type="text" class="form-control" name='username' id="uname"><br>
+        </div>
+        <div class="form-group">
+            <h6><label for="pword">Password: </label></h6>
+            <input type="password" class="form-control" name='password' id="pword"><br>
+        </div>
+        <input type="submit" value="log in">
+    </form>
+    <br>
+    {{message}}
 </div>
 {% endblock %}

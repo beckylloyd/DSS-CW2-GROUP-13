@@ -6,6 +6,7 @@ from flask import request
 from datetime import datetime
 from datetime import timedelta
 
+import DBConnect
 app = Flask(__name__)
 
 # Sets date and time format
@@ -39,13 +40,42 @@ def writeFile(aList, aFile):
 @app.route('/home')
 # Function to return homepage
 def index():
-    return render_template('index.html')
+    allPosts = DBConnect.posts_get_all()
+    posts = []
+    for post in allPosts:
+        username = DBConnect.users_get_username(post[6])
+        tag = DBConnect.tags_get_name(post[5])
+        datetime = post[3] + " " + post[4]
+        posts.append([post[1], post[2], username, tag, datetime])
+    cols = ["Title", "Body", "Username", "Tag", "Posted On"]
+    return render_template('index.html', col_names = cols, rows = posts)
 
 
+# log in to application
 @app.route('/logIn')
-# Function to return homepage
 def logIn():
     return render_template('logIn.html')
+
+@app.route('/userLogIn', methods=['GET', 'POST'])
+def userLogIn():
+
+    username = request.form['username']
+    password = request.form['password']
+    result = DBConnect.login(username, password)
+
+    return render_template('logIn.html', message=result[1])
+
+
+# create a new post
+@app.route('/newPost')
+def newPost():
+    return render_template('newPost.html')
+
+# search for a post
+@app.route('/search')
+def search():
+    return render_template('searchResults.html')
+
 
 if __name__ == '__main__':
     app.run()
