@@ -47,6 +47,7 @@ def index():
         tag = DBConnect.tags_get_name(post[5])
         datetime = post[3] + " " + post[4]
         posts.append([post[1], post[2], username, tag, datetime])
+
     cols = ["Title", "Body", "Username", "Tag", "Posted On"]
     return render_template('index.html', col_names = cols, rows = posts)
 
