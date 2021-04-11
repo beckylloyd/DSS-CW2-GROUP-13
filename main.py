@@ -16,6 +16,9 @@ dateTimeFormat = dateFormat + " %H:%M"
 # Sets locale to GB for currency
 locale.setlocale(locale.LC_ALL, 'en_GB')
 
+# id of the current user
+# TODO make more secure
+user_id = None
 
 
 # Function to read a csv file, add each row into a list and return the list
@@ -59,18 +62,51 @@ def logIn():
 
 @app.route('/userLogIn', methods=['GET', 'POST'])
 def userLogIn():
+    global user_id
+    message = ""
+    if(user_id is None):
+        username = request.form['username']
+        password = request.form['password']
+        result = DBConnect.login(username, password)
+        message = result[1]
+        if(result[0]):
+            user_id = DBConnect.users_get_id(username)
+    else:
+        message = "User already logged in :("
+    print(user_id)
+    return render_template('logIn.html', message=message)
 
-    username = request.form['username']
-    password = request.form['password']
-    result = DBConnect.login(username, password)
-
-    return render_template('logIn.html', message=result[1])
-
-
-# create a new post
+# show new post page
 @app.route('/newPost')
 def newPost():
-    return render_template('newPost.html')
+    # populate the dropdown with all tag names
+    tags = DBConnect.tags_get_all_names()
+    return render_template('newPost.html', tag_values = tags)
+
+# create a new post
+@app.route('/makeNewPost', methods=['GET', 'POST'])
+def makeNewPost():
+    msg = ""
+    # get data from form
+    title = request.form['title']
+    body = request.form['body']
+    tag = request.form['tag']
+
+    # check the user is logged in
+    if(user_id is not None):
+        # check all inputs are filled
+        # TODO disable submit button instead, and highlight the box to be filled
+        if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
+            msg = "Please make sure all boxes are filled :)"
+        else:
+            DBConnect.posts_insert((title, body, tag), user_id)
+            msg = "new post made :D"
+    else:
+        msg = "Sorry, you need to be logged in to post :'("
+
+    # get tags to make sure the select box is populated
+    tags = DBConnect.tags_get_all_names()
+    return render_template('newPost.html', tag_values=tags, msg1=msg)
 
 # search for a post
 @app.route('/search')

@@ -10,6 +10,7 @@ from random import random
 import time
 
 from datetime import datetime
+
 DATABASE = r"sqlite.db"
 
 # create a connection to the DB
@@ -202,6 +203,46 @@ returns: list of all posts
 def posts_get_all():
     return select_all("posts")
 
+def posts_insert(post, user_id):
+    # find post_id based on last post in db
+    all_posts = posts_get_all()
+    post_id = all_posts[len(all_posts)-1][0] + 1
+
+    # get current date and time
+    date = datetime.now().strftime("%d/%m/%Y")
+    time = datetime.now().strftime("%H:%M")
+
+    # get tag id
+    tag_id = tags_get_id(post[2])
+
+    # create post with all parameters
+    insert_post = (post_id, post[0], post[1], date, time, tag_id, user_id)
+
+    # sql query to execute
+    sql_query = "INSERT INTO posts(post_id, title, body, date, time, tag_id, user_id) VALUES(?, ?, ?, ?, ?, ?, ?)"
+
+    conn = None
+    try:
+        # get a db connection
+        conn = connect()
+        # create a cursor
+        cur = conn.cursor()
+        # execute statement
+        cur.execute(sql_query, insert_post)
+
+        conn.commit()
+    except Error as e:
+        print("INSERT ERROR: ", e)
+        exit(0)
+    finally:
+        if conn:
+            conn.close()
+"""
+get the name of a tag from the id
+
+id: the id of the tag to search
+returns: name of the tag 
+"""
 def tags_get_name(id):
     sql_query = "SELECT * FROM tags WHERE tag_id=?"
     row = select_one(sql_query, (id,))
@@ -209,6 +250,34 @@ def tags_get_name(id):
         return row[1]
     else:
         return None
+
+"""
+get the id of a tag from its name
+
+name: the name of the tag to search
+returns: int id of the tag 
+"""
+def tags_get_id(name):
+    sql_query = "SELECT * FROM tags WHERE name=?"
+    row = select_one(sql_query, (name,))
+    if row is not None:
+        return row[0]
+    else:
+        return None
+
+
+"""
+get just the names of all tags in the db
+
+return: list of names as strings 
+"""
+def tags_get_all_names():
+    tags = select_all("tags")
+    names = []
+    for tag in tags:
+        names.append(tag[1])
+    return names
+
 """
 log in to the application
 username: username from form
@@ -250,6 +319,7 @@ def parse_text(text):
 
 
 # if __name__ == '__main__':
+#     posts_insert(("title", "body", "Star Wars"), 2)
     # print(users_get_id('katerina'))
     # print(users_get_username(1))
     # print(users_get_password('katerina'))
