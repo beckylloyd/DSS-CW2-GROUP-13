@@ -1,0 +1,15 @@
+# all posts with lego in title or body
+SELECT * FROM posts WHERE title LIKE '%lego%' UNION SELECT * FROM posts WHERE body LIKE '%lego%';
+
+# make a new view for full posts
+CREATE VIEW IF NOT EXISTS full_posts (post_id, title, body, date, time, name, username)
+AS SELECT post_id, title, body, date, time, tags.name, users.username
+FROM posts
+INNER JOIN tags ON tags.tag_id = posts.tag_id
+INNER JOIN users ON users.user_id = posts.user_id;
+
+# search full_posts
+SELECT * FROM full_posts WHERE title LIKE '%lego%' UNION
+SELECT * FROM full_posts WHERE body LIKE '%lego%' UNION
+SELECT * FROM full_posts WHERE name LIKE '%Star%' UNION
+SELECT * FROM full_posts WHERE username LIKE '%billy%';

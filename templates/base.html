@@ -3,42 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+
+    <link rel="icon" href="/static/favicon.ico">
     <title>Brickin' it</title>
 </head>
 <body>
 <!-- Navigation -->
-<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top" id="mainNav">
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top px-5" id="mainNav">
 
     <!--logo-->
-    <a class="navbar-brand px-5" href="/home">
-        <img src="static/lego_logo.png" alt = "Brickin it" style="width:40px;">
+    <a class="navbar-brand" href="/home">
+        <img src="static/lego_logo_2.png" alt="Brickin it" style="height:40px;">
     </a>
+    <ul class="navbar-nav px-2">
+        <li class="nav-item">
+            <a class="nav-link" href="/home">Home</a>
+        </li>
 
+        <li class="nav-item">
+            <a class="nav-link" href="/newPost">New Post</a>
+        </li>
 
-    <!-- navbar links -->
-    <div class="collapse navbar-collapse" id="navbarResponsive">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item px-3">
-                <a class="nav-link" href="/home">Home</a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link glyphicon glyphicon-user" href="/logIn">Log In</a>
+        </li>
 
-            <li class="nav-item px-3">
-                <a class="nav-link" href="/newPost">New Post</a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link " href="/logOut">Log Out</a>
+        </li>
+    </ul>
 
-            <form class="form-inline px-5" action="/search">
-                <input type="text" placeholder="Search">
-                <button class="btn btn-success" type="submit">Search</button>
-            </form>
-
-            <li class="nav-item px-3">
-                <a class="nav-link" href="/logIn">Log In</a>
-            </li>
-        </ul>
-    </div>
-
+    <form class="form-inline" action="/search">
+        <input type="text" placeholder="Search..." name="search_term">
+        <button class="btn btn-primary btn-sm glyphicon glyphicon-search" type="submit">Search</button>
+    </form>
 
 </nav>
+
 <br>
 <br>
 <br>

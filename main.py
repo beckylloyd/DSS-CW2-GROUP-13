@@ -17,7 +17,7 @@ dateTimeFormat = dateFormat + " %H:%M"
 locale.setlocale(locale.LC_ALL, 'en_GB')
 
 # id of the current user
-# TODO make more secure
+# use sessions instead
 user_id = None
 
 
@@ -76,6 +76,22 @@ def userLogIn():
     print(user_id)
     return render_template('logIn.html', message=message)
 
+@app.route('/logOut')
+def logOut():
+    global user_id
+    user_id = None
+    allPosts = DBConnect.posts_get_all()
+    posts = []
+    for post in allPosts:
+        username = DBConnect.users_get_username(post[6])
+        tag = DBConnect.tags_get_name(post[5])
+        datetime = post[3] + " " + post[4]
+        posts.append([post[1], post[2], username, tag, datetime])
+
+    cols = ["Title", "Body", "Username", "Tag", "Posted On"]
+    return render_template('index.html', col_names=cols, rows=posts)
+
+
 # show new post page
 @app.route('/newPost')
 def newPost():
@@ -109,9 +125,18 @@ def makeNewPost():
     return render_template('newPost.html', tag_values=tags, msg1=msg)
 
 # search for a post
-@app.route('/search')
+@app.route('/search', methods=['GET'])
 def search():
-    return render_template('searchResults.html')
+    search_term = request.args["search_term"]
+    posts = []
+    results = DBConnect.search(search_term)
+    for item in results:
+        datetime = item[3] + " " + item[4]
+        posts.append([item[1], item[2], datetime, item[5], item[6]])
+    cols = ["Title", "Body", "Date posted", "Tag", "User"]
+
+    return render_template('searchResults.html', search_term = search_term, col_names = cols, rows = posts)
+
 
 
 if __name__ == '__main__':

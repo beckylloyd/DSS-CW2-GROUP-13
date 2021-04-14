@@ -4,11 +4,9 @@ Connects with SQLite DB
 """
 
 import sqlite3
+import time
 from sqlite3 import Error
 from random import random
-
-import time
-
 from datetime import datetime
 
 DATABASE = r"sqlite.db"
@@ -94,9 +92,6 @@ def users_get_id(username):
         return row[0]
     return None
 
-
-
-
 """
 Get the username associated with the id
 id: id to search for
@@ -138,7 +133,6 @@ def users_search_user(username):
     if (row is not None):
         return row[1]
     return None
-
 
 """
 select all users from the DB
@@ -195,6 +189,8 @@ def users_delete(id):
         if conn:
             conn.close()
 
+
+
 """
 select all posts in the db
 
@@ -203,6 +199,11 @@ returns: list of all posts
 def posts_get_all():
     return select_all("posts")
 
+"""
+insert post into the db
+post: post t insert (title, body, tag)
+user_id: id of user currently logged in
+"""
 def posts_insert(post, user_id):
     # find post_id based on last post in db
     all_posts = posts_get_all()
@@ -237,6 +238,9 @@ def posts_insert(post, user_id):
     finally:
         if conn:
             conn.close()
+
+
+
 """
 get the name of a tag from the id
 
@@ -265,7 +269,6 @@ def tags_get_id(name):
     else:
         return None
 
-
 """
 get just the names of all tags in the db
 
@@ -277,6 +280,8 @@ def tags_get_all_names():
     for tag in tags:
         names.append(tag[1])
     return names
+
+
 
 """
 log in to the application
@@ -312,14 +317,46 @@ def login(username, password):
         return False, "Error logging in :("
 
 
+"""
+search the db
+term: user input from the search bar
+
+returns: posts found matching the term
+"""
+def search(term):
+
+    sql_query = "SELECT * FROM full_posts WHERE title LIKE ? UNION SELECT * FROM full_posts WHERE body LIKE ? UNION SELECT * FROM full_posts WHERE name LIKE ? UNION SELECT * FROM full_posts WHERE username LIKE ?;"
+    parameters = ('%' + term + '%', '%' + term + '%','%' + term + '%','%' + term + '%' )
+    rows = None
+    conn = None
+    try:
+        # get a db connection
+        conn = connect()
+        # create a cursor
+        cur = conn.cursor()
+        # execute statement
+        cur.execute(sql_query, parameters)
+        rows = cur.fetchall()
+    except Error as e:
+        print("SEARCH ERROR: ", e)
+        exit(0)
+    finally:
+        if conn:
+            conn.close()
+    return rows
+
+
 # just a temp method
 # will be properly written in utilities
 def parse_text(text):
     return text
 
 
-# if __name__ == '__main__':
-#     posts_insert(("title", "body", "Star Wars"), 2)
+if __name__ == '__main__':
+    result = search('billy')
+
+    for each in result:
+        print(each)
     # print(users_get_id('katerina'))
     # print(users_get_username(1))
     # print(users_get_password('katerina'))
