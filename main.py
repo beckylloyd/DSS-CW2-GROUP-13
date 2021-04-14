@@ -1,24 +1,41 @@
 import csv
 import locale
+import os
 import calendar
-from flask import Flask, render_template
+from functools import wraps
+from flask import Flask, render_template, make_response, session, redirect
 from flask import request
 from datetime import datetime
 from datetime import timedelta
 
 import DBConnect
+
 app = Flask(__name__)
 
 # Sets date and time format
 dateFormat = '%d/%m/%Y'
 dateTimeFormat = dateFormat + " %H:%M"
 
+app.secret_key = os.urandom(32)
+
 # Sets locale to GB for currency
 locale.setlocale(locale.LC_ALL, 'en_GB')
 
-# id of the current user
-# TODO make more secure
-user_id = None
+
+
+def std_context(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        context = {}
+        request.context = context
+        if 'userid' in session:
+            context['loggedIn'] = True
+            context['username'] = session['username']
+        else:
+            context['loggedIn'] = False
+        return f(*args, **kwargs)
+
+    return wrapper
 
 
 # Function to read a csv file, add each row into a list and return the list
@@ -41,8 +58,10 @@ def writeFile(aList, aFile):
 @app.route('/')
 # Sets route '/home' to homepage
 @app.route('/home')
+@std_context
 # Function to return homepage
 def index():
+    context = request.context
     allPosts = DBConnect.posts_get_all()
     posts = []
     for post in allPosts:
@@ -50,42 +69,62 @@ def index():
         tag = DBConnect.tags_get_name(post[5])
         datetime = post[3] + " " + post[4]
         posts.append([post[1], post[2], username, tag, datetime])
-
-    cols = ["Title", "Body", "Username", "Tag", "Posted On"]
-    return render_template('index.html', col_names = cols, rows = posts)
+    context['rows'] = posts
+    context['cols'] = ["Title", "Body", "Username", "Tag", "Posted On"]
+    return render_template('index.html', **context)
 
 
 # log in to application
 @app.route('/logIn')
+@std_context
 def logIn():
-    return render_template('logIn.html')
+    context = request.context
+    return render_template('logIn.html', **context)
+
 
 @app.route('/userLogIn', methods=['GET', 'POST'])
+@std_context
 def userLogIn():
-    global user_id
-    message = ""
-    if(user_id is None):
+    context = request.context
+
+    context['message'] = ""
+    if 'userid' not in session or session['userid'] is None:
         username = request.form['username']
         password = request.form['password']
         result = DBConnect.login(username, password)
-        message = result[1]
-        if(result[0]):
-            user_id = DBConnect.users_get_id(username)
+        context['message'] = result[1]
+        if result[0]:
+            session['userid'] = DBConnect.users_get_id(username)
+            session['username'] = username
+            return redirect('/')
     else:
-        message = "User already logged in :("
-    print(user_id)
-    return render_template('logIn.html', message=message)
+        context['message'] = "User already logged in :("
+
+    return render_template('logIn.html', **context)
+
+
+@app.route('/userLogOut')
+def userLogOut():
+    session.pop('userid', None)
+    session.pop('username', None)
+    return redirect('/')
+
 
 # show new post page
 @app.route('/newPost')
+@std_context
 def newPost():
+    context = request.context
     # populate the dropdown with all tag names
-    tags = DBConnect.tags_get_all_names()
-    return render_template('newPost.html', tag_values = tags)
+    context['tag_values'] = DBConnect.tags_get_all_names()
+    return render_template('newPost.html', **context)
+
 
 # create a new post
 @app.route('/makeNewPost', methods=['GET', 'POST'])
+@std_context
 def makeNewPost():
+    context = request.context
     msg = ""
     # get data from form
     title = request.form['title']
@@ -93,25 +132,28 @@ def makeNewPost():
     tag = request.form['tag']
 
     # check the user is logged in
-    if(user_id is not None):
+    if (session['userid'] is not None):
         # check all inputs are filled
         # TODO disable submit button instead, and highlight the box to be filled
         if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
-            msg = "Please make sure all boxes are filled :)"
+            context['msg1'] = "Please make sure all boxes are filled :)"
         else:
             DBConnect.posts_insert((title, body, tag), user_id)
-            msg = "new post made :D"
+            context['msg1'] = "new post made :D"
     else:
-        msg = "Sorry, you need to be logged in to post :'("
+        context['msg1'] = "Sorry, you need to be logged in to post :'("
 
     # get tags to make sure the select box is populated
-    tags = DBConnect.tags_get_all_names()
-    return render_template('newPost.html', tag_values=tags, msg1=msg)
+    context['tag_values'] = DBConnect.tags_get_all_names()
+    return render_template('newPost.html', **context)
+
 
 # search for a post
 @app.route('/search')
+@std_context
 def search():
-    return render_template('searchResults.html')
+    context = request.context
+    return render_template('searchResults.html', **context)
 
 
 if __name__ == '__main__':

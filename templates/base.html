@@ -31,9 +31,16 @@
                 <button class="btn btn-success" type="submit">Search</button>
             </form>
 
-            <li class="nav-item px-3">
+            {% if loggedIn %}
+            <li class="nav-item px-3" >
+                <a class="nav-link" href="/userLogOut" >Log Out</a>
+            </li>
+            {% else %}
+             <li class="nav-item px-3">
                 <a class="nav-link" href="/logIn">Log In</a>
             </li>
+            {% endif %}
+
         </ul>
     </div>
 
