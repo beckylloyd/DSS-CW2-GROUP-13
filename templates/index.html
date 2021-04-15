@@ -1,12 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-    <h3>{% block title %}Home{% endblock %}</h3>
+<div class="container-fluid col-12 align-items-top">
+<div class="row flex-nowrap justify-content-between align-items-center">
+        <h3>{% block title %}Home{% endblock %}</h3>
     <br>
-    <h5> Popular Posts </h5>
+</div>
+<div class="row flex-nowrap justify-content-between align-items-center">
+       <h4> Popular Posts </h4>
+</div>
 
-    <table class="table-bordered" cellpadding="5px">
+<div class="row flex-nowrap justify-content-between align-items-center">
+    <table class="table-bordered" >
         <tr>
             {% for col in col_names %}
             <th>
@@ -24,7 +29,7 @@
         </tr>
         {% endfor %}
     </table>
-
+</div>
 
     <br>
 </div>
