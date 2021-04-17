@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
 <h3>{% block title %}NEW POST{% endblock %}</h3>
 <h5>Create a new post:</h5>
 
-    <form class="form-inline" action="makeNewPost" method="post">
+    <form action="makeNewPost" method="post">
         <div class="form-group">
             <h6><label for="title">Title: </label></h6>
             <input type="text" class="form-control" name='title' id="title"><br>
