@@ -4,11 +4,9 @@ Connects with SQLite DB
 """
 
 import sqlite3
+import time
 from sqlite3 import Error
 from random import random
-
-import time
-
 from datetime import datetime
 
 DATABASE = r"sqlite.db"
@@ -53,13 +51,11 @@ def select_one(sql_query, parameters):
 
 """
 select all rows from table 
-table: table to select from
+sql_query: select all statement 
 
 return: rows found 
 """
-def select_all(table):
-    # ok to not be checked, always called from inside this file
-    sql_query = "SELECT * FROM "+table+";"
+def select_all(sql_query):
     rows = None
     conn = None
     try:
@@ -93,9 +89,6 @@ def users_get_id(username):
     if(row is not None):
         return row[0]
     return None
-
-
-
 
 """
 Get the username associated with the id
@@ -139,14 +132,13 @@ def users_search_user(username):
         return row[1]
     return None
 
-
 """
 select all users from the DB
 
 return: all rows found
 """
 def users_get_all():
-    return select_all("users")
+    return select_all("SELECT * FROM users;")
 
 """
 insert one user into the DB
@@ -195,17 +187,26 @@ def users_delete(id):
         if conn:
             conn.close()
 
+
+
 """
 select all posts in the db
 
 returns: list of all posts 
 """
 def posts_get_all():
-    return select_all("posts")
+    posts = select_all("SELECT * FROM posts;")
+    posts.sort(reverse = True, key=lambda x:datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
+    return posts
 
+"""
+insert post into the db
+post: post t insert (title, body, tag)
+user_id: id of user currently logged in
+"""
 def posts_insert(post, user_id):
     # find post_id based on last post in db
-    all_posts = posts_get_all()
+    all_posts = select_all("SELECT * FROM posts;")
     post_id = all_posts[len(all_posts)-1][0] + 1
 
     # get current date and time
@@ -237,6 +238,9 @@ def posts_insert(post, user_id):
     finally:
         if conn:
             conn.close()
+
+
+
 """
 get the name of a tag from the id
 
@@ -265,18 +269,18 @@ def tags_get_id(name):
     else:
         return None
 
-
 """
 get just the names of all tags in the db
 
 return: list of names as strings 
 """
 def tags_get_all_names():
-    tags = select_all("tags")
-    names = []
-    for tag in tags:
-        names.append(tag[1])
-    return names
+    names =  select_all("SELECT name FROM tags;")
+    ret = []
+    for name in names:
+        ret.append(name[0])
+    return ret
+
 
 """
 log in to the application
@@ -312,6 +316,37 @@ def login(username, password):
         return False, "Error logging in :("
 
 
+"""
+search the db
+term: user input from the search bar
+
+returns: posts found matching the term
+"""
+def search(term):
+
+    sql_query = "SELECT * FROM full_posts WHERE title LIKE ? UNION SELECT * FROM full_posts WHERE body LIKE ? UNION SELECT * FROM full_posts WHERE name LIKE ? UNION SELECT * FROM full_posts WHERE username LIKE ? ORDER BY date;"
+    parameters = ('%' + term + '%', '%' + term + '%','%' + term + '%','%' + term + '%' )
+    rows = None
+    conn = None
+    try:
+        # get a db connection
+        conn = connect()
+        # create a cursor
+        cur = conn.cursor()
+        # execute statement
+        cur.execute(sql_query, parameters)
+        rows = cur.fetchall()
+        rows.sort(reverse=True, key=lambda x: datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
+    except Error as e:
+        print("SEARCH ERROR: ", e)
+        exit(0)
+    finally:
+        if conn:
+            conn.close()
+
+    return rows
+
+
 # just a temp method
 # will be properly written in utilities
 def parse_text(text):
@@ -319,7 +354,13 @@ def parse_text(text):
 
 
 # if __name__ == '__main__':
-#     posts_insert(("title", "body", "Star Wars"), 2)
+#     posts = posts_get_all()
+#     for each in posts:
+#         print(each[3] + " " + each[4])
+#     result = search('billy')
+#
+#     for each in result:
+#         print(each)
     # print(users_get_id('katerina'))
     # print(users_get_username(1))
     # print(users_get_password('katerina'))

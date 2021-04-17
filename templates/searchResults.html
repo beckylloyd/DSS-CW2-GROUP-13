@@ -2,7 +2,34 @@
 
 {% block content %}
 <div class="container">
-<h3>{% block title %}SEARCH RESULTS{% endblock %}</h3>
-<p>SEARCH RESULTS!!!!</p>
+    <h3>{% block title %}Search{% endblock %}</h3>
+    <br>
+    <h5> Search results for {{search_term}} </h5>
+
+    {%for row in rows%}
+
+    <div class="container border border-4 border-secondary rounded-3">
+        <div class="row row-cols-3">
+            <div class="col-8 border border-3 border-top-0 border-end-0 border-start-0">
+                <h5>{{row[0]}}</h5> <!-- title -->
+            </div>
+            <div class="col-2 border border-3 border-top-0 border-end-0 border-bottom-0">
+                <p>username: {{row[2]}}</p>
+            </div>
+            <div class="col-2">
+                <p>tag: {{row[3]}}</p>
+            </div>
+            <div class="col-8">
+                <p class="border-5">{{row[1]}}</p> <!-- body -->
+            </div>
+            <div class="col-4 border border-3 border-top-0 border-end-0 border-bottom-0">
+                <p>posted on: {{row[4]}}</p>
+            </div>
+
+        </div>
+    </div>
+    <br>
+    {%endfor%}
+    <br>
 </div>
 {% endblock %}

@@ -1,36 +1,36 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid col-12 align-items-top">
-<div class="row flex-nowrap justify-content-between align-items-center">
-        <h3>{% block title %}Home{% endblock %}</h3>
+<div class="container">
     <br>
-</div>
-<div class="row flex-nowrap justify-content-between align-items-center">
-       <h4> Popular Posts </h4>
-</div>
+    <h2>{% block title %}Home{% endblock %}</h2>
+    <br>
+    <h3> Popular Posts </h3>
 
-<div class="row flex-nowrap justify-content-between align-items-center">
-    <table class="table-bordered" >
-        <tr>
-            {% for col in col_names %}
-            <th>
-                {{col}}
-            </th>
-            {% endfor %}
-        </tr>
-        {% for row in rows %}
-        <tr>
-            {% for item in row%}
-            <td>
-                {{item}}
-            </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
-</div>
+    {%for row in rows%}
 
+    <div class="container border border-4 border-secondary rounded-3">
+        <div class="row row-cols-3">
+            <div class="col-8 border border-3 border-top-0 border-end-0 border-start-0">
+                <h5>{{row[0]}}</h5> <!-- title -->
+            </div>
+            <div class="col-2 border border-3 border-top-0 border-end-0 border-bottom-0">
+                <p>username: {{row[2]}}</p>
+            </div>
+            <div class="col-2">
+                <p>tag: {{row[3]}}</p>
+            </div>
+            <div class="col-8">
+                <p class="border-5">{{row[1]}}</p> <!-- body -->
+            </div>
+            <div class="col-4 border border-3 border-top-0 border-end-0 border-bottom-0">
+                <p>posted on: {{row[4]}}</p>
+            </div>
+
+        </div>
+    </div>
+    <br>
+    {%endfor%}
     <br>
 </div>
 {% endblock %}

@@ -9,7 +9,6 @@ from datetime import datetime
 from datetime import timedelta
 
 import DBConnect
-
 app = Flask(__name__)
 
 # Sets date and time format
@@ -70,7 +69,6 @@ def index():
         datetime = post[3] + " " + post[4]
         posts.append([post[1], post[2], username, tag, datetime])
     context['rows'] = posts
-    context['cols'] = ["Title", "Body", "Username", "Tag", "Posted On"]
     return render_template('index.html', **context)
 
 
@@ -138,7 +136,7 @@ def makeNewPost():
         if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
             context['msg1'] = "Please make sure all boxes are filled :)"
         else:
-            DBConnect.posts_insert((title, body, tag), user_id)
+            DBConnect.posts_insert((title, body, tag), session['userid'])
             context['msg1'] = "new post made :D"
     else:
         context['msg1'] = "Sorry, you need to be logged in to post :'("
@@ -149,11 +147,20 @@ def makeNewPost():
 
 
 # search for a post
-@app.route('/search')
+@app.route('/search', methods=['GET'])
 @std_context
 def search():
     context = request.context
+    search_term = request.args["search_term"]
+    posts = []
+    results = DBConnect.search(search_term)
+    for item in results:
+        datetime = item[3] + " " + item[4]
+        posts.append([item[1], item[2], item[6], item[5],datetime ])
+    context['search_term'] = search_term
+    context['rows'] = posts
     return render_template('searchResults.html', **context)
+
 
 
 if __name__ == '__main__':
