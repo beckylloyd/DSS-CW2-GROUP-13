@@ -4,22 +4,26 @@
 <div class="container-fluid">
     <div class="justify-content-around d-flex">
         <div class="col-6 p-5">
-            <h3>{% block title %}Log In{% endblock %}</h3>
+            <h3>{% block title %}Sign Up{% endblock %}</h3>
             <br>
-            <form action="userLogIn" method="post">
+            <form action="userSignUp" method="post">
                 <div class="form-group">
                     <h6><label for="email">Email: </label></h6>
                     <input type="text" class="form-control" name='email' id="email"><br>
                 </div>
                 <div class="form-group">
+                    <h6><label for="uname">Username: </label></h6>
+                    <input type="text" class="form-control" name='username' id="uname"><br>
+                </div>
+                <div class="form-group">
                     <h6><label for="pword">Password: </label></h6>
                     <input type="password" class="form-control" name='password' id="pword"><br>
                 </div>
-                <input type="submit" value="Log In">
+                <input type="submit" value="Sign Up">
             </form>
             <br>
             {{message}}
         </div>
-    </div>
+
 </div>
 {% endblock %}

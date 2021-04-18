@@ -87,19 +87,42 @@ def userLogIn():
 
     context['message'] = ""
     if 'userid' not in session or session['userid'] is None:
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
-        result = DBConnect.login(username, password)
+        result = DBConnect.login(email, password)
         context['message'] = result[1]
         if result[0]:
-            session['userid'] = DBConnect.users_get_id(username)
-            session['username'] = username
+            session['userid'] = DBConnect.users_get_id(email)
+            session['username'] = DBConnect.users_get_username(session['userid'])
             return redirect('/')
     else:
         context['message'] = "User already logged in :("
 
     return render_template('logIn.html', **context)
 
+@app.route('/signUp')
+@std_context
+def signUp():
+    context = request.context
+    return render_template('signUp.html', **context)
+
+
+@app.route('/userSignUp', methods=['GET', 'POST'])
+@std_context
+def userSignUp():
+    context = request.context
+
+    context['message'] = ""
+    if 'userid' not in session or session['userid'] is None:
+        email = request.form['email']
+        username = request.form['username']
+        password = request.form['password']
+        result = DBConnect.signUp(email, username, password)
+        context['message'] = result[1]
+    else:
+        context['message'] = "User already logged in :("
+
+    return render_template('signUp.html', **context)
 
 @app.route('/userLogOut')
 def userLogOut():

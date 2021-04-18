@@ -4,6 +4,7 @@ Connects with SQLite DB
 """
 
 import sqlite3
+
 import time
 from sqlite3 import Error
 from random import random
@@ -11,7 +12,27 @@ from datetime import datetime
 
 DATABASE = r"sqlite.db"
 
-# create a connection to the DB
+"""
+only authorises select queries
+"""
+def select_authoriser(sqltype, arg1, arg2, dbname, source):
+    if sqltype == sqlite3.SQLITE_SELECT or sqltype == sqlite3.SQLITE_READ:
+        return sqlite3.SQLITE_OK
+    else:
+        return sqlite3.SQLITE_DENY
+"""
+only authorises insert queries 
+"""
+def insert_authoriser(sqltype, arg1, arg2, dbname, source):
+    print(sqltype)
+    if sqltype == sqlite3.SQLITE_INSERT or sqltype == sqlite3.SQLITE_TRANSACTION:
+        return sqlite3.SQLITE_OK
+    else:
+        return sqlite3.SQLITE_DENY
+
+"""
+create a connection to the DB
+"""
 def connect():
     conn = None
     try:
@@ -36,6 +57,8 @@ def select_one(sql_query, parameters):
     try:
         # get a db connection
         conn = connect()
+        # set authoriser for select statements
+        conn.set_authorizer(select_authoriser)
         # create a cursor
         cur = conn.cursor()
         # execute statement
@@ -43,7 +66,7 @@ def select_one(sql_query, parameters):
         rows = cur.fetchone()
     except Error as e:
         print("SELECT ERROR: ", e)
-        exit(0)
+        return None
     finally:
         if conn:
             conn.close()
@@ -61,6 +84,8 @@ def select_all(sql_query):
     try:
         # get a db connection
         conn = connect()
+        # set authoriser for select statements
+        conn.set_authorizer(select_authoriser)
         # create a cursor
         cur = conn.cursor()
         # execute statement
@@ -68,7 +93,7 @@ def select_all(sql_query):
         rows = cur.fetchall()
     except Error as e:
         print("SELECT ALL ERROR: ", e)
-        exit(0)
+        return None
     finally:
         if conn:
             conn.close()
@@ -78,13 +103,13 @@ def select_all(sql_query):
 
 """
 get the id of a user in the db
-username: string username of user to select
+email: string email of user to select
 
 return: id of first row returned 
 """
-def users_get_id(username):
-    sql_query = "SELECT * FROM users WHERE username=?"
-    parameters = (username,)
+def users_get_id(email):
+    sql_query = "SELECT * FROM users WHERE email=?"
+    parameters = (email,)
     row = select_one(sql_query, parameters)
     if(row is not None):
         return row[0]
@@ -106,13 +131,13 @@ def users_get_username(id):
 
 """
 find the password of a user in the db
-username: string username of user to select
+email: string email of user to select
 
 return: password of first row returned 
 """
-def users_get_password(username):
-    sql_query = "SELECT * FROM users WHERE username=?"
-    parameters = (username,)
+def users_get_password(email):
+    sql_query = "SELECT * FROM users WHERE email=?"
+    parameters = (email,)
     row = select_one(sql_query, parameters)
     if (row is not None):
         return row[2]
@@ -120,18 +145,31 @@ def users_get_password(username):
 
 """
 check if a user is in the db
+email: string email of user to select
+
+return: email of first row returned 
+"""
+def users_search_user(email):
+    sql_query = "SELECT * FROM users WHERE email=?"
+    parameters = (email,)
+    row = select_one(sql_query, parameters)
+    if (row is not None):
+        return row[3]
+    return None
+
+"""
+get the email of a user in the db
 username: string username of user to select
 
-return: username of first row returned 
+return: email linked to the username provided 
 """
-def users_search_user(username):
+def users_get_email(username):
     sql_query = "SELECT * FROM users WHERE username=?"
     parameters = (username,)
     row = select_one(sql_query, parameters)
     if (row is not None):
-        return row[1]
+        return row[3]
     return None
-
 """
 select all users from the DB
 
@@ -146,11 +184,13 @@ user: data to insert
       eg. (1, "name")
 """
 def users_insert(user):
-    sql_query = "INSERT INTO users(id, username, password) VALUES(?, ?, ?)"
+    sql_query = "INSERT INTO users(user_id, username, password, email) VALUES(?, ?, ?, ?);"
     conn = None
     try:
         # get a db connection
         conn = connect()
+        # set authoriser to insert only
+        conn.set_authorizer(insert_authoriser)
         # create a cursor
         cur = conn.cursor()
         # execute statement
@@ -163,31 +203,6 @@ def users_insert(user):
     finally:
         if conn:
             conn.close()
-
-"""
-delete user from the db
-id: id of the user to delete 
-"""
-def users_delete(id):
-    sql_query = "DELETE FROM users WHERE id=?"
-    conn = None
-    try:
-        # get a db connection
-        conn = connect()
-        # create a cursor
-        cur = conn.cursor()
-        # execute statement
-        cur.execute(sql_query, (id,))
-
-        conn.commit()
-    except Error as e:
-        print("DELETE ERROR: ", e)
-        exit(0)
-    finally:
-        if conn:
-            conn.close()
-
-
 
 """
 select all posts in the db
@@ -226,6 +241,8 @@ def posts_insert(post, user_id):
     try:
         # get a db connection
         conn = connect()
+        # set authoriser to only allow inserts
+        conn.set_authorizer(insert_authoriser)
         # create a cursor
         cur = conn.cursor()
         # execute statement
@@ -290,21 +307,21 @@ password: password from form
 returns: bool (logged in or not)
          message: "Log in successful :)" or "Error logging in :("
 """
-def login(username, password):
+def login(email, password):
     user_ok = False
     pass_ok = False
 
-    # parse username and password(?)
-    username = parse_text(username)
+    # parse email and password(?)
+    email = parse_text(email)
     password = parse_text(password)
 
     # search for username
-    uname = users_search_user(username)
-    if(uname == username):
+    user = users_search_user(email)
+    if(user == email):
         user_ok = True
 
     # search for password (even if username incorrect)
-    pword = users_get_password(username)
+    pword = users_get_password(email)
     if(pword == password):
         pass_ok = True
 
@@ -314,6 +331,34 @@ def login(username, password):
         return True, "Log in successful :)"
     else:
         return False, "Error logging in :("
+
+"""
+sign up to the application
+email: email from form 
+username: username from form
+password: password from form
+
+returns: mesage 
+"""
+def signUp(email, username, password):
+    new_user = False
+    message = ""
+    # parse input text
+    email = parse_text(email)
+    username = parse_text(username)
+    password = parse_text(password)
+
+    # search for username
+    user = users_search_user(email)
+    if (user == email):
+        message = "This email already has an account"
+    else:
+        message = "This is a new account"
+        new_user = True
+
+    return new_user, message
+
+
 
 
 """
@@ -353,26 +398,8 @@ def parse_text(text):
     return text
 
 
-# if __name__ == '__main__':
-#     posts = posts_get_all()
-#     for each in posts:
-#         print(each[3] + " " + each[4])
-#     result = search('billy')
-#
-#     for each in result:
-#         print(each)
-    # print(users_get_id('katerina'))
-    # print(users_get_username(1))
-    # print(users_get_password('katerina'))
-    # print(users_search_user('katerina'))
-    # print(users_get_all())
-    #
-    # print(posts_get_all())
-    # print(tags_get_name(1))
-    #
-    # print(login("katerina", "password1234"))
-    # print(login("katerina", "password"))
-    # print(login("jessica", "password1234"))
-
-
+if __name__ == '__main__':
+    print(select_one("SELECT * FROM users;", ()))
+    print(posts_insert(("title", "body", 1), 1))
+    print(users_insert((10, "new", "new","new")))
 

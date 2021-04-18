@@ -13,3 +13,10 @@ SELECT * FROM full_posts WHERE title LIKE '%lego%' UNION
 SELECT * FROM full_posts WHERE body LIKE '%lego%' UNION
 SELECT * FROM full_posts WHERE name LIKE '%Star%' UNION
 SELECT * FROM full_posts WHERE username LIKE '%billy%';
+
+UPDATE users SET email = "katerina@email.com" WHERE user_id = 1;
+UPDATE users SET email = "henry@email.com" WHERE user_id = 2;
+UPDATE users SET email = "billy@email.com" WHERE user_id = 3;
+UPDATE users SET email = "lottie@email.com" WHERE user_id = 4;
+UPDATE users SET email = "izzy@email.com" WHERE user_id = 5; 
+UPDATE users SET email = "minnie@email.com" WHERE user_id = 6; SELECT * FROM users;
