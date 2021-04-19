@@ -118,7 +118,6 @@ def userSignUp():
         username = request.form['username']
         password = request.form['password']
         result = DBConnect.signUp(email, username, password)
-        context['message'] = result[1]
     else:
         context['message'] = "User already logged in :("
 

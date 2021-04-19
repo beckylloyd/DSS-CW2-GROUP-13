@@ -24,14 +24,23 @@ class DBTestMethods(unittest.TestCase):
         login_ok = (True, "Log in successful :)")
         login_not = (False, "Error logging in :(")
 
-        self.assertEqual(db.login("katerina@email.com", "password1234"), login_ok)
-        self.assertEqual(db.login("katerina@email.com", "password"), login_not)
-        self.assertEqual(db.login("katerina", "password"), login_not)
+        self.assertEqual(db.login("lottie@email.com", "123password"), login_ok)
+        self.assertEqual(db.login("lottie@email.com", "password"), login_not)
+        self.assertEqual(db.login("lottie", "password"), login_not)
 
     def test_search(self):
         self.assertIsNotNone(db.search("lego"))
         self.assertAlmostEqual(db.search("schaufensterpuppen"), [])
         self.assertAlmostEqual(db.search("';ALTER TABLE users RENAME TO malicious;"), [])
+
+    def test_sign_up(self):
+        email = "katerina.holdsworth@gmail.com"
+        new_email= (True, "An email has been sent to: " + email +" Please check your inbox for more details!")
+        old_username = (False, "This username already exists")
+        # make sure to remove new3 before running
+        #self.assertEqual(db.signUp(email, "new3", "pass"), new_email)
+        self.assertEqual(db.signUp(email, "katerina", "pass"), old_username)
+
 
 
 

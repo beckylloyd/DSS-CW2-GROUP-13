@@ -9,7 +9,8 @@ import time
 from sqlite3 import Error
 from random import random
 from datetime import datetime
-
+from email.message import EmailMessage
+import smtplib
 DATABASE = r"sqlite.db"
 
 """
@@ -24,7 +25,6 @@ def select_authoriser(sqltype, arg1, arg2, dbname, source):
 only authorises insert queries 
 """
 def insert_authoriser(sqltype, arg1, arg2, dbname, source):
-    print(sqltype)
     if sqltype == sqlite3.SQLITE_INSERT or sqltype == sqlite3.SQLITE_TRANSACTION:
         return sqlite3.SQLITE_OK
     else:
@@ -180,11 +180,13 @@ def users_get_all():
 
 """
 insert one user into the DB
-user: data to insert
-      eg. (1, "name")
+user: data to insert (email, username, password)
 """
 def users_insert(user):
     sql_query = "INSERT INTO users(user_id, username, password, email) VALUES(?, ?, ?, ?);"
+    all_users = users_get_all()
+    id = all_users[len(all_users) -1][0] + 1
+    insert_user = (id, user[1], user[2], user[0])
     conn = None
     try:
         # get a db connection
@@ -194,15 +196,15 @@ def users_insert(user):
         # create a cursor
         cur = conn.cursor()
         # execute statement
-        cur.execute(sql_query, user)
-
+        cur.execute(sql_query, insert_user)
         conn.commit()
     except Error as e:
         print("INSERT ERROR: ", e)
-        exit(0)
+        return False
     finally:
         if conn:
             conn.close()
+    return True
 
 """
 select all posts in the db
@@ -348,18 +350,55 @@ def signUp(email, username, password):
     username = parse_text(username)
     password = parse_text(password)
 
-    # search for username
-    user = users_search_user(email)
-    if (user == email):
-        message = "This email already has an account"
-    else:
-        message = "This is a new account"
-        new_user = True
+    # if username exists
+        # error on page
+    # else send email
+        # if email new- say welcome
+        # else- say account exists
 
+    # see if username already exists
+    result = users_get_email(username)
+    if result is not None:
+        # username already exists
+        message = "This username already exists"
+    else:
+        # see if the email address is already used
+        result = users_search_user(email)
+        if result is not None:
+            # email already exists
+            sendEmail(email, "Hi there "+username+" !\nThis email address has already been used to sign up to Brickin' It :o. Please log in instead!")
+        else:
+            # new email
+            hashedPass = hash(password)
+            inserted = users_insert((email, username, hashedPass))
+            if inserted:
+                new_user = True
+                sendEmail(email, "Hi there "+username+" !\nYou have created an account with Brickin' It! :D\n You can now log in!")
+            else:
+                sendEmail(email, "Hi there "+username+" !\nUnfortunately we couldn't create an account for you :( Please try again later")
+
+        message = "An email has been sent to: " + email +" Please check your inbox for more details!"
     return new_user, message
 
+def sendEmail(address, message):
+    sender = 'Brickin\' it! <group08.studyplanner@gmail.com>'
 
+    email = EmailMessage()
+    email['From'] = sender
+    email['To'] = address
+    email['Subject'] = "Brickin' it"
+    email.set_content(message)
 
+    try:
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login("group08.studyplanner@gmail.com", "group08!")
+        server.send_message(email)
+        server.close()
+        print("sent!")
+    except smtplib.SMTPException as e:
+        print("ERROR: ")
+        print(e)
 
 """
 search the db
@@ -392,14 +431,19 @@ def search(term):
     return rows
 
 
-# just a temp method
+# just temp methods
 # will be properly written in utilities
 def parse_text(text):
     return text
+def hash(text):
+    return text
+
+# if __name__ == '__main__':
+#     # print(signUp("katerina.holdsworth@gmail.com", "new", "pass")) # new new
+#     # print(signUp("katerina.holdsworth@gmail.com", "new2", "pass")) # old new
+#     # print(signUp("katerina.holdsworth@gmail.com", "katerina", "pass")) # new old
+#     print(signUp("katerina@email.com", "katerina", "pass")) # old old
 
 
-if __name__ == '__main__':
-    print(select_one("SELECT * FROM users;", ()))
-    print(posts_insert(("title", "body", 1), 1))
-    print(users_insert((10, "new", "new","new")))
+
 
