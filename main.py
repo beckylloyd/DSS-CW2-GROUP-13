@@ -158,8 +158,8 @@ def makeNewPost():
         if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
             context['msg1'] = "Please make sure all boxes are filled :)"
         else:
-            DBConnect.posts_insert((title, body, tag), session['userid'])
-            context['msg1'] = "new post made :D"
+            res = DBConnect.posts_insert((title, body, tag), session['userid'])
+            context['msg1'] = res[1]
     else:
         context['msg1'] = "Sorry, you need to be logged in to post :'("
 

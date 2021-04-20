@@ -222,6 +222,25 @@ post: post t insert (title, body, tag)
 user_id: id of user currently logged in
 """
 def posts_insert(post, user_id):
+    # check when the user last posted
+    query = "SELECT * FROM posts WHERE user_id=" + str(user_id) + ";"
+    user_posts = select_all(query)
+    if len(user_posts) != 0:
+        user_posts.sort(reverse=True, key=lambda x: datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
+
+        # get the last posts date and time
+        last_date = datetime.strptime(user_posts[0][3], "%d/%m/%Y")
+        last_time = datetime.strptime(user_posts[0][4], "%H:%M")
+
+        # check if last post on same day
+        if(last_date.date() == datetime.now().date()):
+            # check time since last post
+            time_diff =  (datetime.now() - last_time).seconds/60
+            if(time_diff < 5):
+                # last post less than 5 mins ago, dont post
+                return False, "Sorry we can't post this right now, try again later"
+
+
     # find post_id based on last post in db
     all_posts = select_all("SELECT * FROM posts;")
     post_id = all_posts[len(all_posts)-1][0] + 1
@@ -249,15 +268,15 @@ def posts_insert(post, user_id):
         cur = conn.cursor()
         # execute statement
         cur.execute(sql_query, insert_post)
-
         conn.commit()
+
     except Error as e:
         print("INSERT ERROR: ", e)
-        exit(0)
+        return False, "Sorry we can't post this right now, try again later"
     finally:
         if conn:
             conn.close()
-
+    return True, "New post made :)"
 
 
 """
@@ -350,11 +369,6 @@ def signUp(email, username, password):
     username = parse_text(username)
     password = parse_text(password)
 
-    # if username exists
-        # error on page
-    # else send email
-        # if email new- say welcome
-        # else- say account exists
 
     # see if username already exists
     result = users_get_email(username)
@@ -439,10 +453,10 @@ def hash(text):
     return text
 
 # if __name__ == '__main__':
-#     # print(signUp("katerina.holdsworth@gmail.com", "new", "pass")) # new new
-#     # print(signUp("katerina.holdsworth@gmail.com", "new2", "pass")) # old new
-#     # print(signUp("katerina.holdsworth@gmail.com", "katerina", "pass")) # new old
-#     print(signUp("katerina@email.com", "katerina", "pass")) # old old
+#
+#     print(posts_insert(("hey", "post", "Star Wars"), 2))
+#     print(posts_insert(("hey", "post", "Star Wars"), 5))
+#     print(posts_insert(("hey", "post", "Star Wars"), 4))
 
 
 
