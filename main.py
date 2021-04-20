@@ -3,7 +3,7 @@ import locale
 import os
 import calendar
 from functools import wraps
-from flask import Flask, render_template, make_response, session, redirect, app
+from flask import Flask, render_template, make_response, session, redirect, app, flash
 from flask import request
 from datetime import datetime
 from datetime import timedelta
@@ -23,26 +23,25 @@ locale.setlocale(locale.LC_ALL, 'en_GB')
 
 @app.before_request
 def make_session_permanent():
-    context = {}
-    request.context = context
     now = datetime.now()
-    try:
-        last_active = session['last_active']
-        print(last_active)
-        delta = now - last_active
-        if delta.seconds > 10:
-            session['last_active'] = now
-            context['message'] = "Your session has expired due to 10 minutes of inactivity, please sign back in to " \
-                                 "access your account. "
-            userLogOut()
-            return render_template('logIn.html', **context)
-    except:
-        pass
+    if session.get("userid") is not None:
+        try:
+            last_active = session['last_active']
+            print(last_active)
+            delta = now - last_active
+            if delta.seconds > 600:
+                session['last_active'] = now
+                flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ", "info")
+                session.pop('userid', None)
+                session.pop('username', None)
+                return redirect("/logIn")
+        except:
+            pass
 
     try:
-        session['last_active'] = now
+       session['last_active'] = now
     except:
-        pass
+       pass
 
 
 def std_context(f):
