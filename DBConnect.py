@@ -11,6 +11,8 @@ from random import random
 from datetime import datetime
 from email.message import EmailMessage
 import smtplib
+
+import Utilities
 DATABASE = r"sqlite.db"
 
 """
@@ -252,8 +254,13 @@ def posts_insert(post, user_id):
     # get tag id
     tag_id = tags_get_id(post[2])
 
+   # Utilities.extra_secure = True
+    # parse the title and body
+    title = Utilities.parse(post[0])[1]
+    body = Utilities.parse(post[1])[1]
+
     # create post with all parameters
-    insert_post = (post_id, post[0], post[1], date, time, tag_id, user_id)
+    insert_post = (post_id, title, body, date, time, tag_id, user_id)
 
     # sql query to execute
     sql_query = "INSERT INTO posts(post_id, title, body, date, time, tag_id, user_id) VALUES(?, ?, ?, ?, ?, ?, ?)"
@@ -332,9 +339,9 @@ def login(email, password):
     user_ok = False
     pass_ok = False
 
-    # parse email and password(?)
-    email = parse_text(email)
-    password = parse_text(password)
+    # parse email, if not valid set to "" as extra protection
+    if not Utilities.is_email(email):
+        email = ""
 
     # search for username
     user = users_search_user(email)
@@ -363,39 +370,49 @@ returns: mesage
 """
 def signUp(email, username, password):
     new_user = False
+    password_secure = True
     message = ""
+
     # parse input text
-    email = parse_text(email)
-    username = parse_text(username)
-    password = parse_text(password)
-
-
-    # see if username already exists
-    result = users_get_email(username)
-    if result is not None:
-        # username already exists
-        message = "This username already exists"
+    if not Utilities.is_email(email):
+        new_user = False
+        message = "Please enter a valid email address!"
+    elif not Utilities.secure_password(password):
+        new_user = False
+        message = "Please enter a more secure password!"
     else:
-        # see if the email address is already used
-        result = users_search_user(email)
-        if result is not None:
-            # email already exists
-            sendEmail(email, "Hi there "+username+" !\nThis email address has already been used to sign up to Brickin' It :o. Please log in instead!")
-        else:
-            # new email
-            hashedPass = hash(password)
-            inserted = users_insert((email, username, hashedPass))
-            if inserted:
-                new_user = True
-                sendEmail(email, "Hi there "+username+" !\nYou have created an account with Brickin' It! :D\n You can now log in!")
-            else:
-                sendEmail(email, "Hi there "+username+" !\nUnfortunately we couldn't create an account for you :( Please try again later")
+        username = Utilities.parse(username)[1]
 
-        message = "An email has been sent to: " + email +" Please check your inbox for more details!"
+        # see if username already exists
+        result = users_get_email(username)
+        if result is not None:
+            # username already exists
+            message = "This username already exists"
+        else:
+            # see if the email address is already used
+            result = users_search_user(email)
+            if result is not None:
+                # email already exists
+                sendEmail(email, "Hi there "+username+" !\nThis email address has already been used to sign up to Brickin' It :o. Please log in instead!")
+            else:
+                # new email
+                hashedPass = hash(password)
+                inserted = users_insert((email, username, hashedPass))
+                sent = False
+                if inserted:
+                    new_user = True
+                    sent = sendEmail(email, "Hi there "+username+" !\nYou have created an account with Brickin' It! :D\n You can now log in!")
+                else:
+                    sent = sendEmail(email, "Hi there "+username+" !\nUnfortunately we couldn't create an account for you :( Please try again later")
+            if sent:
+                message = "An email has been sent to: " + email +" Please check your inbox for more details!"
+            else:
+                message = "Sign up unsuccessful, please try again later"
+
     return new_user, message
 
 def sendEmail(address, message):
-    sender = 'Brickin\' it! <group08.studyplanner@gmail.com>'
+    sender = 'Brickin\' it! <email>'
 
     email = EmailMessage()
     email['From'] = sender
@@ -406,22 +423,26 @@ def sendEmail(address, message):
     try:
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.ehlo()
-        server.login("group08.studyplanner@gmail.com", "group08!")
+        server.login("username", "password")
         server.send_message(email)
         server.close()
         print("sent!")
     except smtplib.SMTPException as e:
         print("ERROR: ")
         print(e)
+        server.close()
+        return False
+    return True
 
 """
 search the db
 term: user input from the search bar
 
-returns: posts found matching the term
+returns: term after parsing, posts found matching the term
 """
 def search(term):
-
+    Utilities.extra_secure = True
+    term = Utilities.parse(term)[1]
     sql_query = "SELECT * FROM full_posts WHERE title LIKE ? UNION SELECT * FROM full_posts WHERE body LIKE ? UNION SELECT * FROM full_posts WHERE name LIKE ? UNION SELECT * FROM full_posts WHERE username LIKE ? ORDER BY date;"
     parameters = ('%' + term + '%', '%' + term + '%','%' + term + '%','%' + term + '%' )
     rows = None
@@ -442,7 +463,7 @@ def search(term):
         if conn:
             conn.close()
 
-    return rows
+    return term, rows
 
 
 # just temp methods

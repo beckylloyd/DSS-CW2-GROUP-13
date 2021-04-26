@@ -118,6 +118,7 @@ def userSignUp():
         username = request.form['username']
         password = request.form['password']
         result = DBConnect.signUp(email, username, password)
+        context['message'] = result[1]
     else:
         context['message'] = "User already logged in :("
 
@@ -176,10 +177,10 @@ def search():
     search_term = request.args["search_term"]
     posts = []
     results = DBConnect.search(search_term)
-    for item in results:
+    for item in results[1]:
         datetime = item[3] + " " + item[4]
         posts.append([item[1], item[2], item[6], item[5],datetime ])
-    context['search_term'] = search_term
+    context['search_term'] = results[0]
     context['rows'] = posts
     return render_template('searchResults.html', **context)
 

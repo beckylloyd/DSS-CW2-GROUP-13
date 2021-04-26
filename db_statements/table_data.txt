@@ -17,3 +17,4 @@ INSERT INTO tags(tag_id, name) VALUES (5, 'Friends');
 INSERT INTO posts(post_id, title, body, date, time, tag_id, user_id) VALUES (1, 'Fave theme', 'I like Star Wars lego the most.', '01/04/2021', '11:00', 1, 1);
 INSERT INTO posts(post_id, title, body, date, time, tag_id, user_id) VALUES (2, 'Lego issue', 'I cant build my lego ninjago set, pls send help.', '29/03/2021', '13:30', 2, 2);
 INSERT INTO posts(post_id, title, body, date, time, tag_id, user_id) VALUES (3, 'Question about duplo', 'What ages is lego duplo for?', '27/03/2021', '18:25', 3, 3);
+
