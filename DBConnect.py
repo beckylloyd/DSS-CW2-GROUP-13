@@ -128,7 +128,7 @@ def users_get_username(id):
     parameters = (id,)
     row = select_one(sql_query, parameters)
     if (row is not None):
-        return row[1]
+        return row[2]
     return None
 
 """
@@ -142,7 +142,7 @@ def users_get_password(email):
     parameters = (email,)
     row = select_one(sql_query, parameters)
     if (row is not None):
-        return row[2]
+        return row[3]
     return None
 
 """
@@ -156,7 +156,7 @@ def users_search_user(email):
     parameters = (email,)
     row = select_one(sql_query, parameters)
     if (row is not None):
-        return row[3]
+        return row[1]
     return None
 
 """
@@ -170,8 +170,23 @@ def users_get_email(username):
     parameters = (username,)
     row = select_one(sql_query, parameters)
     if (row is not None):
-        return row[3]
+        return row[1]
     return None
+
+"""
+get the date a user was added to the db
+email: email of the user to search 
+
+return: date that user was added
+"""
+def users_get_added(email):
+    sql_query = "SELECT * FROM users WHERE email=?"
+    parameters = (email,)
+    row = select_one(sql_query, parameters)
+    if (row is not None):
+        return row[4]
+    return None
+
 """
 select all users from the DB
 
@@ -185,10 +200,12 @@ insert one user into the DB
 user: data to insert (email, username, password)
 """
 def users_insert(user):
-    sql_query = "INSERT INTO users(user_id, username, password, email) VALUES(?, ?, ?, ?);"
+    sql_query = "INSERT INTO users(user_id, email, username, password, added) VALUES(?, ?, ?, ?, ?);"
     all_users = users_get_all()
     id = all_users[len(all_users) -1][0] + 1
-    insert_user = (id, user[1], user[2], user[0])
+    added = datetime.now()
+    hashed = Utilities.hash(user[2], added)
+    insert_user = (id, user[0], user[1], hashed, added.strftime("%d/%m/%Y %H:%M:%S:%f"))
     conn = None
     try:
         # get a db connection
@@ -254,7 +271,7 @@ def posts_insert(post, user_id):
     # get tag id
     tag_id = tags_get_id(post[2])
 
-   # Utilities.extra_secure = True
+    Utilities.use_encoding = True
     # parse the title and body
     title = Utilities.parse(post[0])[1]
     body = Utilities.parse(post[1])[1]
@@ -349,8 +366,10 @@ def login(email, password):
         user_ok = True
 
     # search for password (even if username incorrect)
-    pword = users_get_password(email)
-    if(pword == password):
+    hash_pword = users_get_password(email)
+    added = datetime.strptime(users_get_added(email), "%d/%m/%Y %H:%M:%S:%f")
+    hash_input = Utilities.hash(password, added)
+    if (hash_input == hash_pword):
         pass_ok = True
 
     # check if both correct
@@ -465,19 +484,6 @@ def search(term):
 
     return term, rows
 
-
-# just temp methods
-# will be properly written in utilities
-def parse_text(text):
-    return text
-def hash(text):
-    return text
-
-# if __name__ == '__main__':
-#
-#     print(posts_insert(("hey", "post", "Star Wars"), 2))
-#     print(posts_insert(("hey", "post", "Star Wars"), 5))
-#     print(posts_insert(("hey", "post", "Star Wars"), 4))
 
 
 

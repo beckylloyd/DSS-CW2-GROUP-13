@@ -1,5 +1,5 @@
 --USERS--
-INSERT INTO users(user_id, username, password) VALUES (1, 'katerina', 'password1234');
+INSERT INTO users(user_id, email, username, password, added) VALUES (1, 'katerina', 'password1234');
 INSERT INTO users(user_id, username, password) VALUES (2, 'henry', 'pass');
 INSERT INTO users(user_id, username, password) VALUES (3, 'billy', 'mypassword');
 INSERT INTO users(user_id, username, password) VALUES (4, 'lottie', '123password');

@@ -9,6 +9,9 @@ back slash \: &#92;
 """
 
 import re
+from datetime import datetime
+import time
+
 
 # regexes from https://owasp.org/www-community/OWASP_Validation_Regex_Repository
 EMAIL = r"[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$"
@@ -16,7 +19,7 @@ GENERIC = r"^[a-zA-Z0-9 .:!?()-]+$"
 PASSWORD = r"^(?:(?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))(?!.*(.)\1{2,})[A-Za-z0-9!~<>,;:_=?*+#.\"&§%°()\|\[\]\-\$\^\@\/]{8,128}$"
 
 match = ['<', '>', '/', '\\']
-match_extended = ['<', '>', '/', '\\', ';', ':', '(', ')', '$', '%', '&', '#', '\"', '-']
+match_extended = [';', '#','<', '>', '/', '\\', ':', '(', ')', '$', '%', '&',  '\"', '-']
 encoding = [['\'', '&#27;'],
             ['#', '&#35;'],
             ['$', '&#36;'],
@@ -69,6 +72,12 @@ def encode(text):
             new_text += c
     return new_text
 
+def unencode(text):
+    temp = text.split()
+    for pair in encoding:
+        text = text.replace(pair[1], pair[0])
+    return text
+
 """
 remove any potentially malicious characters from the text
 """
@@ -96,9 +105,81 @@ def secure_password(password):
     x = re.match(PASSWORD, password)
     return not (x is None)
 
+"""
+encrypt text 
+text: text to encrypt
+
+return: the encrypted text
+        the time used when encrypting 
+"""
+def encrypt(text):
+    encrypt_time = datetime.now()
+    time_hash = round(encrypt_time.time().microsecond * 1000)
+    cipher_text = ''
+    for character in text:
+        character_ascii = (ord(character))
+        hashed = time_hash * character_ascii
+        cipher_text += str(hashed) + '.'
+    return cipher_text, encrypt_time
+
+"""
+decrypt text
+cipher_text: the encryped text
+encrypt_time: time the text was encrypted
+
+return: the plain text 
+"""
+def decrypt(cipher_text, encrypt_time):
+    time_hash = round(encrypt_time.time().microsecond * 1000)
+    plain_text = ''
+    hashes = cipher_text.split('.')
+    for hash in hashes:
+        hash_int = 0
+        try:
+            hash_int = int(hash)
+        except:
+            break
+        character_ascii = int(hash_int/time_hash)
+        plain_text += chr(character_ascii)
+    return plain_text
+
+"""
+one way hashing function
+text: text to be hashed
+time: time to use when hashing
+
+return: hashed text 
+"""
+def hash(text, hash_time):
+    time_hash = round(hash_time.timestamp() * 1000)
+    cipher_text = ''
+    for character in text:
+        character_ascii = (ord(character))
+        hashed = time_hash * character_ascii
+        cipher_text += str(hashed)
+    return cipher_text
 
 
 # if __name__ == '__main__':
+#     text = input("enter some text to encrypt and decrypt: ")
+#     cipher, encrypt_time = encrypt(text)
+#     print(cipher)
+#     plain = decrypt(cipher, encrypt_time)
+#     print(plain)
+#     print(plain == text)
+#
+#     text = input("enter some text to hash: ")
+#     hash_time = datetime.now()
+#     hash1 = hash(text, hash_time)
+#     time.sleep(60)
+#     hash2 = hash(text, hash_time)
+#     print(hash1 == hash2)
+#     text = "<script>document.alert(\"haha\");</script>;"
+#     encoded = encode(text)
+#     print("encoded: " , encoded)
+#     decoded = unencode(encoded)
+#     print("decoded: ",decoded )
+#     print(text == decoded)
 #     print("Generic text")
 #     print("\t|" + parse("here is some normal text nothing to see here.")[1])
 #     print("\t|" + parse("here is some snazzy! text :o it has more stuff in it? :D")[1])

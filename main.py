@@ -9,6 +9,7 @@ from datetime import datetime
 from datetime import timedelta
 
 import DBConnect
+import Utilities
 app = Flask(__name__)
 
 # Sets date and time format
@@ -67,7 +68,9 @@ def index():
         username = DBConnect.users_get_username(post[6])
         tag = DBConnect.tags_get_name(post[5])
         datetime = post[3] + " " + post[4]
-        posts.append([post[1], post[2], username, tag, datetime])
+        title = Utilities.unencode(post[1])
+        body = Utilities.unencode(post[2])
+        posts.append([title, body, username, tag, datetime])
     context['rows'] = posts
     return render_template('index.html', **context)
 
@@ -179,7 +182,9 @@ def search():
     results = DBConnect.search(search_term)
     for item in results[1]:
         datetime = item[3] + " " + item[4]
-        posts.append([item[1], item[2], item[6], item[5],datetime ])
+        title = Utilities.unencode(item[1])
+        body = Utilities.unencode(item[2])
+        posts.append([title, body, item[6], item[5],datetime ])
     context['search_term'] = results[0]
     context['rows'] = posts
     return render_template('searchResults.html', **context)
