@@ -180,39 +180,6 @@ def hash(text, hash_time):
 #     decoded = unencode(encoded)
 #     print("decoded: ",decoded )
 #     print(text == decoded)
-#     print("Generic text")
-#     print("\t|" + parse("here is some normal text nothing to see here.")[1])
-#     print("\t|" + parse("here is some snazzy! text :o it has more stuff in it? :D")[1])
-#     print("\t|" + parse("<script>document.alert(\"haha\");</script>;")[1])
-#     print("\t|" + parse("' union all select password from users;--")[1])
-#
-#     print("Extra secure ")
-#     extra_secure = True
-#     print("\t|" + parse("here is some normal text nothing to see here.")[1])
-#     print("\t|" + parse("here is some snazzy! text :o it has more stuff in it? :D")[1])
-#     print("\t|" + parse("<script>document.alert(\"haha\");</script>;")[1])
-#     print("\t|" + parse("' union all select password from users;--")[1])
-#
-#     print("Use encoding")
-#     use_encoding = True
-#     print("\t|" + parse("here is some normal text nothing to see here.")[1])
-#     print("\t|" + parse("here is some snazzy! text :o it has more stuff in it? :D")[1])
-#     print("\t|" + parse("<script>document.alert(\"haha\");</script>;")[1])
-#     print("\t|" + parse("' union all select password from users;--")[1])
-#
-#     print("\n----- Emails -----")
-#     print("katerina.holdsworth@gmail.com = " + str(is_email("katerina.holdsworth@gmail.com")))
-#     print("this is not an@ email address.com = " + str(is_email("this is not an@ email address.com")))
-#     print("testy@email.w = " + str(is_email("testy@email.w")))
-#
-#     print("\n----- Passwords -----")
-#     print("alllowercase: " , secure_password("alllowercase"))
-#     print("short: " , secure_password("short"))
-#     print("nONumbERs: " , secure_password("nONumbERs"))
-#     print("numbersAnD123: ",  secure_password("numbersAnD123"))
-#     print("symBol&*: " , secure_password("symBol&*"))
-#     print("eequAl89: " , secure_password("eequAl89"))
-#     print("aaaa23E: " , secure_password("aaaa23E"))
 
 
 

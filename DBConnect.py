@@ -367,7 +367,11 @@ def login(email, password):
 
     # search for password (even if username incorrect)
     hash_pword = users_get_password(email)
-    added = datetime.strptime(users_get_added(email), "%d/%m/%Y %H:%M:%S:%f")
+    added = users_get_added(email)
+    if added is None:
+        added = datetime.now()
+    else:
+        added = datetime.strptime(users_get_added(email), "%d/%m/%Y %H:%M:%S:%f")
     hash_input = Utilities.hash(password, added)
     if (hash_input == hash_pword):
         pass_ok = True
@@ -413,12 +417,14 @@ def signUp(email, username, password):
             if result is not None:
                 # email already exists
                 sendEmail(email, "Hi there "+username+" !\nThis email address has already been used to sign up to Brickin' It :o. Please log in instead!")
+                sent = True
             else:
                 # new email
                 hashedPass = hash(password)
                 inserted = users_insert((email, username, hashedPass))
                 sent = False
                 if inserted:
+
                     new_user = True
                     sent = sendEmail(email, "Hi there "+username+" !\nYou have created an account with Brickin' It! :D\n You can now log in!")
                 else:
