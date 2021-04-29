@@ -105,6 +105,7 @@ def logIn():
     return render_template('logIn.html', **context)
 
 
+
 @app.route('/userLogIn', methods=['GET', 'POST'])
 @std_context
 def userLogIn():
@@ -224,6 +225,17 @@ def search():
     context['search_term'] = results[0]
     context['rows'] = posts
     return render_template('searchResults.html', **context)
+
+
+
+# my profile
+@app.route('/profile')
+@std_context
+def profile():
+
+    context = request.context
+    context['list'] = [1, 2, 3, 4, 5,6,7,8,9,10]
+    return render_template('profile.html', **context)
 
 
 if __name__ == '__main__':

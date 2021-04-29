@@ -22,3 +22,8 @@
   color: #000000 !important;
   border-color: #c6b008 !important;
 }
+
+
+.text-responsive {
+  font-size: calc(100% + 1vw + 1vh);
+}

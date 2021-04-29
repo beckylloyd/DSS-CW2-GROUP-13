@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+
+    <div class="col-md-4 p-2 d-flex justify-content-center">
+        <div class="sticky-top" style="top: 70px">
+            <div class="jumbotron" style="min-width: auto; max-width: 320px">
+                <img src="/static/user_images/user.png" alt="User Profile Image" class="rounded-circle mx-auto d-block"
+                     style="max-width: 50%">
+                <br>
+                <h1 class="text-center">my_user_name</h1>
+                <hr class="my-4">
+                <p class="text-center">This is a bio about someone who really loves LEGO. Like really loves
+                    LEGO.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Left column with posts-->
+    <div class="col-md-8  p-2">
+
+        <!-- Box for each post -->
+        {%for item in list%}
+        <div class="jumbotron pt-2">
+            <div class="container-fluid pt-3 pb-2 ">
+                <div id="PostTitle" class="row">
+                    <h2>Modular Wishlist</h2>
+                </div>
+                <div id="PostMain" class="row rounded border border-white p-3 bg-light">
+                    Hello Everyone,
+
+                    I know we are a while off hearing about the next Modular for next year, but I would love to hear
+                    everyone's wishlists for future modulars. I'm keen to see what the common wishes are.
+
+                    I have forever wanted Lego to do a Museum modular, I unfortunately don't have time to create my own
+                    MOC of one, so a set would be great to see one day. I thought they could have different parts packs
+                    similar to the minifigures ones with a different themes to fill in your museum exhibitions - eg
+                    Egyptian, Roman, natural history, arts, Lego History. I know it will never happen but one can dream
+                    :grin:
+
+                    What does everyone else want to see as future sets?
+                </div>
+
+                <!-- Box for each comment - TO DO need to make into list -->
+                <span id="CommentsHeader" class="row mt-2 ml-3 ">
+                    <h5>Comments</h5>
+                </span>
+
+
+                    <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
+                <div id="Comments" class="row">
+                    <div id="CommentContainer" class="container-fluid p-2">
+                        <div class="row">
+                            <div class="col-2 align-self-center">
+
+                                <div id="CommenterImg" class="col-12">
+                                    <div class="row d-flex justify-content-center">
+                                        <img src="/static/user_images/LEGO_NURSE.png" alt="User Profile Image"
+                                             class="rounded-circle"
+                                             style="max-width: 35px">
+                                    </div>
+                                    <div class="row d-flex justify-content-center">
+                                        <p class="font-weight-bold">
+                                        nhs_4eva </p>
+                                    </div>
+                                    <div class="row d-flex justify-content-center">
+                                        <button type="button" class="btn btn-danger"
+                                                aria-label="Delete comment">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                 fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                <path fill-rule="evenodd"
+                                                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
+                                <div class="row">
+                                    <div id="Comment" class="col-12"><span class="text-left">
+                                        I for one think that now with the Police Station Lego will finally touch on more
+                                        Town Infrastructure like bringing us a School or Hospital. maybe even a big
+                                        College with small Sports Yard.
+                                        Myself, I would actually like a nice Apartment Complex in Modular Style, with
+                                        Balconies and a lot of Flowers.</span>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-9">
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="row mx-auto justify-content-end">
+                                     <span class="font-weight-light">
+                                        <small> 01/01/2021
+                                            <span class="font-italic">
+                                                12:54pm
+                                            </span>
+                                        </small>
+                                    </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                                   <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
+                <div class="row">
+                    <div class="container-fluid p-2">
+                        <div class="row">
+                            <div class="col-2 align-self-center">
+
+                                <div class="col-12">
+                                    <div class="row d-flex justify-content-center">
+                                        <img src="/static/user_images/LEGO_BATMAN.png" alt="User Profile Image"
+                                             class="rounded-circle"
+                                             style="max-width: 35px">
+                                    </div>
+                                    <div class="row d-flex justify-content-center">
+                                        <p class="font-weight-bold">
+                                        BATM4N </p>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
+                                <div class="row">
+                                    <div  class="col-12"><span class="text-left">
+                                     I like batman.</span>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-9">
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="row mx-auto justify-content-end">
+                                     <span class="font-weight-light">
+                                        <small> 01/04/2021
+                                            <span class="font-italic">
+                                                12:57pm
+                                            </span>
+                                        </small>
+                                    </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Add comments box if logged in -->
+                <form class="mt-2">
+                    <div class="form-row mb-2 mt-2">
+                        <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts..">
+                    </div>
+                    <div class="form-row justify-content-end">
+
+                        <div class="row ">
+                            <!-- Delete button if user who posted the post was who is logged in-->
+                            <button type="submit" class="btn btn-danger p-1 mr-2">Delete Post</button>
+                            <button type="submit" class="btn btn-primary p-1">Add Comment</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+</div>
+
+
+<!-- Profile section-->
+
+
+{% endblock %}
