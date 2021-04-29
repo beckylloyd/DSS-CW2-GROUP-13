@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="/static/css/style.css" rel="stylesheet" media="all">
     <link rel="icon" href="/static/favicon.ico">
-
     <title>Brickin' it</title>
 </head>
 <body class="bg-light">
@@ -41,17 +40,14 @@
 
             <div class="col-4 d-flex justify-content-left align-items-center">
                 <a style="color: black" class="nav-link p-2" href="/home">Home</a>
-                <a style="color: black" class="nav-link p-2" href="/newPost">New Post</a>
-
+                <a style="color: black" class="nav-link p-2"  href="/newPost">New Post</a>
             </div>
 
             <div class="col-6 d-flex justify-content-end align-items-center">
 
                 <form class="form-inline p-2 " action="/search">
                     <input class="form-control" type="text" placeholder="Search" name="search_term">
-
                     <button class="btn btn-danger  " type="submit">Search</button>
-
                 </form>
                 {% if loggedIn %}
                 <a class="btn btn-light" style="background-color: white; border-color: white;"
@@ -59,16 +55,11 @@
                    href="/userLogOut">Log Out</a>
 
                 {% else %}
-                <a class="btn btn-light" style="background-color: white; border-color: white;" role="button"
-                   href="/logIn">Log In</a>
-
-                <a class="btn btn-light mx-2" style="background-color: white; border-color: white;"
-                   role="button"
-                   href="/logIn">Sign up</a>
+                <a class="btn btn-light" style="background-color: white; border-color: white;" role="button" href="/logIn">Log In</a>
+                <a  class="btn btn-light mx-2" style="background-color: white; border-color: white;" role="button" href="/signUp">Sign up</a>
 
                 {% endif %}
             </div>
-
         </div>
     </div>
 </nav>

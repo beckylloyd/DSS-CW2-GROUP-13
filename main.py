@@ -10,13 +10,12 @@ from datetime import datetime
 from datetime import timedelta
 
 import DBConnect
-
+import Utilities
 app = Flask(__name__)
 
 # Sets date and time format
 dateFormat = '%d/%m/%Y'
 dateTimeFormat = dateFormat + " %H:%M"
-
 
 app.secret_key = os.urandom(32)
 
@@ -91,9 +90,10 @@ def index():
         username = DBConnect.users_get_username(post[6])
         tag = DBConnect.tags_get_name(post[5])
         datetime = post[3] + " " + post[4]
-        posts.append([post[1], post[2], username, tag, datetime])
+        title = Utilities.unencode(post[1])
+        body = Utilities.unencode(post[2])
+        posts.append([title, body, username, tag, datetime])
     context['rows'] = posts
-    context['cols'] = ["Title", "Body", "Username", "Tag", "Posted On"]
     return render_template('index.html', **context)
 
 
@@ -112,13 +112,13 @@ def userLogIn():
 
     context['message'] = ""
     if 'userid' not in session or session['userid'] is None:
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
-        result = DBConnect.login(username, password)
+        result = DBConnect.login(email, password)
         context['message'] = result[1]
         if result[0]:
-            session['userid'] = DBConnect.users_get_id(username)
-            session['username'] = username
+            session['userid'] = DBConnect.users_get_id(email)
+            session['username'] = DBConnect.users_get_username(session['userid'])
             return redirect('/')
     else:
         context['message'] = "User already logged in :("
@@ -126,6 +126,30 @@ def userLogIn():
     return render_template('logIn.html', **context)
 
 # logs out user from session, called from log out button
+@app.route('/signUp')
+@std_context
+def signUp():
+    context = request.context
+    return render_template('signUp.html', **context)
+
+
+@app.route('/userSignUp', methods=['GET', 'POST'])
+@std_context
+def userSignUp():
+    context = request.context
+
+    context['message'] = ""
+    if 'userid' not in session or session['userid'] is None:
+        email = request.form['email']
+        username = request.form['username']
+        password = request.form['password']
+        result = DBConnect.signUp(email, username, password)
+        context['message'] = result[1]
+    else:
+        context['message'] = "User already logged in :("
+
+    return render_template('signUp.html', **context)
+
 @app.route('/userLogOut')
 def userLogOut():
     session.pop('userid', None)
@@ -174,8 +198,8 @@ def makeNewPost():
         if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
             context['msg1'] = "Please make sure all boxes are filled :)"
         else:
-            DBConnect.posts_insert((title, body, tag), session['userid'])
-            context['msg1'] = "new post made :D"
+            res = DBConnect.posts_insert((title, body, tag), session['userid'])
+            context['msg1'] = res[1]
     else:
         context['msg1'] = "Sorry, you need to be logged in to post :'("
 
@@ -192,10 +216,12 @@ def search():
     search_term = request.args["search_term"]
     posts = []
     results = DBConnect.search(search_term)
-    for item in results:
+    for item in results[1]:
         datetime = item[3] + " " + item[4]
-        posts.append([item[1], item[2], item[6], item[5],datetime ])
-    context['search_term'] = search_term
+        title = Utilities.unencode(item[1])
+        body = Utilities.unencode(item[2])
+        posts.append([title, body, item[6], item[5],datetime ])
+    context['search_term'] = results[0]
     context['rows'] = posts
     return render_template('searchResults.html', **context)
 

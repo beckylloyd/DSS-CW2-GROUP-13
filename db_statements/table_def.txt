@@ -1,8 +1,10 @@
 -- USERS --
 CREATE TABLE IF NOT EXISTS users (
 user_id integer PRIMARY KEY,
+email test NOT NULL UNIQUE,
 username text NOT NULL UNIQUE,
-password blob NOT NULL 
+password blob NOT NULL,
+added text NOT NULL
 )WITHOUT ROWID;
 
 
