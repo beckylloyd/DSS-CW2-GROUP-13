@@ -1,25 +1,49 @@
 import csv
+import json
 import locale
 import os
 import calendar
 from functools import wraps
-from flask import Flask, render_template, make_response, session, redirect
+from flask import Flask, render_template, make_response, session, redirect, app, flash
 from flask import request
 from datetime import datetime
 from datetime import timedelta
 
 import DBConnect
+
 app = Flask(__name__)
 
 # Sets date and time format
 dateFormat = '%d/%m/%Y'
 dateTimeFormat = dateFormat + " %H:%M"
 
+
 app.secret_key = os.urandom(32)
 
 # Sets locale to GB for currency
 locale.setlocale(locale.LC_ALL, 'en_GB')
 
+@app.before_request
+def make_session_permanent():
+    now = datetime.now()
+    if session.get("userid") is not None:
+        try:
+            last_active = session['last_active']
+            print(last_active)
+            delta = now - last_active
+            if delta.seconds > 600:
+                session['last_active'] = now
+                flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ", "warning")
+                session.pop('userid', None)
+                session.pop('username', None)
+                return redirect("/logIn")
+        except:
+            pass
+
+    try:
+       session['last_active'] = now
+    except:
+       pass
 
 
 def std_context(f):
@@ -27,11 +51,11 @@ def std_context(f):
     def wrapper(*args, **kwargs):
         context = {}
         request.context = context
-        if 'userid' in session:
+        if 'userid' not in session or 'userid' in session is None:
+            context['loggedIn'] = False
+        else:
             context['loggedIn'] = True
             context['username'] = session['username']
-        else:
-            context['loggedIn'] = False
         return f(*args, **kwargs)
 
     return wrapper
@@ -69,6 +93,7 @@ def index():
         datetime = post[3] + " " + post[4]
         posts.append([post[1], post[2], username, tag, datetime])
     context['rows'] = posts
+    context['cols'] = ["Title", "Body", "Username", "Tag", "Posted On"]
     return render_template('index.html', **context)
 
 
@@ -100,13 +125,26 @@ def userLogIn():
 
     return render_template('logIn.html', **context)
 
-
+# logs out user from session, called from log out button
 @app.route('/userLogOut')
 def userLogOut():
     session.pop('userid', None)
     session.pop('username', None)
-    return redirect('/')
+    return redirect("/logIn")
 
+# used in session auto log out modal to update last active in python
+@app.route('/ajaxLogOut', methods=['GET', 'POST'])
+def ajaxLogOut():
+    session.pop('userid', None)
+    session.pop('username', None)
+    flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ",
+          "warning")
+    return json.dumps({'status': 'OK', 'message': "Your session has expired due to 10 minutes of inactivity, please sign back in to access your account." });
+
+# used in session auto log out modal to update last active in python
+@app.route('/ajaxExtend', methods=['GET', 'POST'])
+def ajaxExtend():
+    return json.dumps({'status': 'OK', 'message': "session extended" });
 
 # show new post page
 @app.route('/newPost')
@@ -160,7 +198,6 @@ def search():
     context['search_term'] = search_term
     context['rows'] = posts
     return render_template('searchResults.html', **context)
-
 
 
 if __name__ == '__main__':
