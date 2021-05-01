@@ -38,6 +38,11 @@ def insert_authoriser(sqltype, arg1, arg2, dbname, source):
     else:
         return sqlite3.SQLITE_DENY
 
+def update_authoriser(sqltype, arg1, arg2, dbname, source):
+    if sqltype == sqlite3.SQLITE_READ or sqltype == sqlite3.SQLITE_TRANSACTION or sqltype == sqlite3.SQLITE_UPDATE:
+        return sqlite3.SQLITE_OK
+    else:
+        return sqlite3.SQLITE_DENY
 """
 create a connection to the DB
 """
@@ -80,13 +85,9 @@ def select_one(sql_query, parameters):
             conn.close()
     return rows
 
-"""
-select all rows from table 
-sql_query: select all statement 
 
-return: rows found 
-"""
-def select_all(sql_query):
+
+def select_all(sql_query, parameters):
     rows = None
     conn = None
     try:
@@ -97,7 +98,7 @@ def select_all(sql_query):
         # create a cursor
         cur = conn.cursor()
         # execute statement
-        cur.execute(sql_query)
+        cur.execute(sql_query, parameters)
         rows = cur.fetchall()
     except Error as e:
         print("SELECT ALL ERROR: ", e)
@@ -107,7 +108,24 @@ def select_all(sql_query):
             conn.close()
     return rows
 
-
+def update(sql_query, parameters):
+    try:
+        # get a db connection
+        conn = connect()
+        # set authoriser to insert only
+        conn.set_authorizer(update_authoriser)
+        # create a cursor
+        cur = conn.cursor()
+        # execute statement
+        cur.execute(sql_query, parameters)
+        conn.commit()
+    except Error as e:
+        print("UPDATE ERROR: ", e)
+        return False
+    finally:
+        if conn:
+            conn.close()
+    return True
 
 """
 get the id of a user in the db
@@ -118,6 +136,14 @@ return: id of first row returned
 def users_get_id(email):
     sql_query = "SELECT * FROM users WHERE email=?"
     parameters = (email,)
+    row = select_one(sql_query, parameters)
+    if(row is not None):
+        return row[0]
+    return None
+
+def users_get_id_u(username):
+    sql_query = "SELECT * FROM users WHERE username=?"
+    parameters = (username,)
     row = select_one(sql_query, parameters)
     if(row is not None):
         return row[0]
@@ -178,6 +204,17 @@ def users_get_email(username):
     if (row is not None):
         return row[1]
     return None
+"""
+gets specific details of a user 
+username: username of user to search 
+
+return: (username, image, bio)
+"""
+def users_get_details(username):
+    sql_query = "SELECT username, image, bio FROM users WHERE username=?"
+    parameters = (username,)
+    return select_one(sql_query, parameters)
+
 
 """
 get the date a user was added to the db
@@ -199,7 +236,7 @@ select all users from the DB
 return: all rows found
 """
 def users_get_all():
-    return select_all("SELECT * FROM users;")
+    return select_all("SELECT * FROM users;", ())
 
 """
 insert one user into the DB
@@ -232,15 +269,62 @@ def users_insert(user):
     return True
 
 """
+update the bio of a specific user
+username: username of user to update
+bio: new bio to insert
+
+return bool is updates
+"""
+def users_update_bio(username, bio):
+    user_id = users_get_id_u(username)
+    sql_query = "UPDATE users SET bio=? WHERE user_id=?"
+    parameters = (bio, user_id)
+    return update(sql_query, parameters)
+
+"""
+update the image of a specific user
+username: username of user to update
+image: new image to insert
+
+return bool is updates
+"""
+def users_update_image(username, image):
+    user_id = users_get_id_u(username)
+    sql_query = "UPDATE users SET image=? WHERE user_id=?"
+    parameters = (image, user_id)
+    return update(sql_query, parameters)
+
+
+"""
 select all posts in the db
 
 returns: list of all posts 
 """
 def posts_get_all():
-    posts = select_all("SELECT * FROM posts;")
+    posts = select_all("SELECT * FROM posts;", ())
     posts.sort(reverse = True, key=lambda x:datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
     return posts
 
+"""
+get all posts from specific user
+username: username of user to search
+
+return: list of posts [post_id, title, body, date, time, tag_id, user_id]
+"""
+def posts_from_user(username):
+    user_id = users_get_id_u(username) # [Title, date, time, post text, username, post_id]
+    if user_id is not None:
+        sql_query = "SELECT title, date, time, body, user_id, post_id from posts where user_id=?"
+        parameters = (user_id,)
+        posts = select_all(sql_query, parameters)
+        all_posts = []
+        for post in posts:
+            username = users_get_username(post[4])
+            title = Utilities.unencode(post[0])
+            body = Utilities.unencode(post[3])
+            all_posts.append([title, post[1], post[2], body, username, post[5]])
+        return all_posts
+    return None
 """
 insert post into the db
 post: post t insert (title, body, tag)
@@ -249,7 +333,7 @@ user_id: id of user currently logged in
 def posts_insert(post, user_id):
     # check when the user last posted
     query = "SELECT * FROM posts WHERE user_id=" + str(user_id) + ";"
-    user_posts = select_all(query)
+    user_posts = select_all(query, ())
     if len(user_posts) != 0:
         user_posts.sort(reverse=True, key=lambda x: datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
 
@@ -267,7 +351,7 @@ def posts_insert(post, user_id):
 
 
     # find post_id based on last post in db
-    all_posts = select_all("SELECT * FROM posts;")
+    all_posts = select_all("SELECT * FROM posts;", ())
     post_id = all_posts[len(all_posts)-1][0] + 1
 
     # get current date and time
@@ -343,12 +427,29 @@ get just the names of all tags in the db
 return: list of names as strings 
 """
 def tags_get_all_names():
-    names =  select_all("SELECT name FROM tags;")
+    names =  select_all("SELECT name FROM tags;", ())
     ret = []
     for name in names:
         ret.append(name[0])
     return ret
 
+"""
+selects all comments from post
+post_id = post to search
+
+return list of comments[image, user name, comment, date, time]
+"""
+def comments_from_post(post_id):
+    sql_query = "SELECT * FROM comments WHERE post_id=?"
+    parameters = (post_id,)
+    comments = select_all(sql_query, parameters)
+    full_comments = []
+    if comments is not None:
+        for comment in comments:
+            username = users_get_username(comment[5])
+            user = users_get_details(username)
+            full_comments.append([user[1], username, comment[1], comment[2], comment[3]])
+    return full_comments
 
 """
 log in to the application
@@ -526,5 +627,8 @@ def search(term):
 
 
 # if __name__ == '__main__':
-#     sendEmail("katerina.holdsworth@gmail.com", ["username", "here is a nice message :)"])
-
+#     # print(users_get_details("billy"))
+#     # print(posts_from_user("billy"))
+#     # print(comments_from_post(1))
+#     print(users_update_bio("billy", "I love lego so much!!"))
+#     print(users_update_image("billy", "LEGO_PIRATE"))

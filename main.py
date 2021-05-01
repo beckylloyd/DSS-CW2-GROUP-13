@@ -28,7 +28,7 @@ def make_session_permanent():
     if session.get("userid") is not None:
         try:
             last_active = session['last_active']
-            print(last_active)
+            #print(last_active)
             delta = now - last_active
             if delta.seconds > 600:
                 session['last_active'] = now
@@ -264,38 +264,71 @@ def profile():
     context = request.context
 
     # Get user details
-    # array of [image text name, user name, bio] (SHOULD BE ABLE TO ADD THIS INTO LOG IN SO ITS SAVED IN THE SESSION)
-    context['username'] = "username"
-    context['image'] = "LEGO_PIRATE"
-    context['bio'] = "This is a bio about someone who really loves LEGO. Like really loves LEGO."
+    results = DBConnect.users_get_details(session['username'])
+    context['username'] = results[0]
+    context['image'] = results[1]
+    context['bio'] = results[2]
 
     # Get post details into array of arrays - given the username into database method
-    # Single array contain [Title, date, time, post text, username, post_id]
-    # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
-    # for each loop to append array of array of comments to end of each post array
-    # Single array contains [image text name, user name, comment, date, time]
-    # for each loop in each comment to check if boolean of if user name = logged in user
+    all_posts = DBConnect.posts_from_user(results[0]) # [Title, date, time, post text, username, post_id]
 
-    context['list'] = [["TITLE", "01/01/2021", "12:54pm",
-                        "POST TEXT", "username", True,
-                        [["LEGO_NURSE", "commenter_name", False, "comment", "01/01/21", "10:00am"],
-                         ["LEGO_Pirate", "username", True, "comment back", "01/01/21", "10:07am"]]]
-                       ]
+    # Single array contain [Title, date, time, post text, username, post_id]
+
+    # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
+    for each in all_posts:
+        each.append(True) # [Title, date, time, post text, username, post_id, logged in]
+
+        # for each loop to append array of array of comments to end of each post array
+        comments = DBConnect.comments_from_post(each[5])
+
+        # for each loop in each comment to check if boolean of if user name = logged in user
+        for comment in comments:
+            if(comment[1] == context['username']):
+                comment.append(True)
+            else:
+                comment.append(False)
+        each.append(comments)
+
+    context['list'] = all_posts
     return render_template('profile.html', **context)
 
 
 # other profile
-@app.route('/otherProfile')
+@app.route('/otherProfile/<string:username>')
 @std_context
 def otherProfile(username):
     context = request.context
+    print(username)
+    # Get user details
+    results = DBConnect.users_get_details(username)
+    context['username'] = results[0]
+    context['image'] = results[1]
+    context['bio'] = results[2]
 
-    # get user details based on username
-    # results = DBConnect.getUserdetails(username)
-    # context['username'] = results[1]
-    # context['image'] = results[2]
-    # context['bio'] = results[3]
+    # Get post details into array of arrays - given the username into database method
+    all_posts = DBConnect.posts_from_user(results[0])  # [Title, date, time, post text, username, post_id]
 
+    # Single array contain [Title, date, time, post text, username, post_id]
+
+    # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
+    for each in all_posts:
+        if(username == session['username']):
+            each.append(True)  # [Title, date, time, post text, username, post_id, logged in]
+        else:
+            each.append(False)
+        # for each loop to append array of array of comments to end of each post array
+        comments = DBConnect.comments_from_post(each[5])
+
+        # for each loop in each comment to check if boolean of if user name = logged in user
+        for comment in comments:
+            if (comment[1] == session['username']):
+                comment.append(True)
+            else:
+                comment.append(False)
+        each.append(comments)
+        print(each)
+
+    context['list'] = all_posts
     return render_template('profile.html', **context)
 
 

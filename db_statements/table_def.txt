@@ -34,4 +34,24 @@ FOREIGN KEY (user_id)
 	ON UPDATE CASCADE
 ) WITHOUT ROWID;
 
+-- COMMENTS --
+CREATE TABLE IF NOT EXISTS comments (
+comment_id integer PRIMARY KEY,
+comment text NOT NULL,
+date blob NOT NULL,
+time blob NOT NULL,
+post_id integer,
+user_id integer,
+FOREIGN KEY (post_id)
+	REFERENCES posts(post_id)
+	ON DELETE RESTRICT
+	ON UPDATE CASCADE,
+FOREIGN KEY (user_id)
+	REFERENCES users(user_id)
+	ON DELETE RESTRICT
+	ON UPDATE CASCADE
+) WITHOUT ROWID;
+
+
+
 

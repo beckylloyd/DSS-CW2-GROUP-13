@@ -10,7 +10,8 @@
                 <img src="/static/user_images/{{image}}.png" alt="User Profile Image" class="rounded-circle mx-auto d-block"
                      style="max-width: 50%">
                 <br>
-                <h1 class="text-center">{{username}}</h1>
+
+                                           <h1 class="text-center">{{username}} </h1>
                 <hr class="my-4">
                 <p class="text-center">{{bio}}</p>
             </div>
@@ -37,7 +38,7 @@
                     <span class="font-weight-light pl-3 pt-2 justify-content-end">
                                         <small>
                                             <span class="font-weight-bold">
-                                                {{item[4]}}
+                                                <a class="font-weight-bold"  href="/otherProfile/{{item[4]}}">{{item[4]}}</a>
                                             </span>
                                         </small>
                                     </span>
@@ -67,8 +68,8 @@
                                              style="max-width: 35px">
                                     </div>
                                     <div class="row d-flex justify-content-center">
-                                        <p class="font-weight-bold">
-                                            {{comment[1]}} </p>
+                                        <a class="font-weight-bold"  href="/otherProfile/{{comment[1]}}">
+                                            {{comment[1]}} </a>
                                     </div>
                                     {% if comment[5] %}
                                     <div class="row d-flex justify-content-center">
@@ -132,7 +133,7 @@
 
                         <div class="row ">
                             <!-- Delete button if user who posted the post was who is logged in-->
-                            {% if item[5] %}
+                            {% if item[6] %}
                             <button type="submit" class="btn btn-danger p-1 mr-2">Delete Post</button>
                             {% endif %}
                             {% if loggedIn %}
