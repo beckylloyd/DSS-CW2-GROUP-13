@@ -395,44 +395,55 @@ def signUp(email, username, password):
     new_user = False
     password_secure = True
     message = ""
+    sent = False
+    flash_massage = False
 
-    # parse input text
+    # chekc if email is valid
     if not Utilities.is_email(email):
-        new_user = False
+        flash_massage = True
         message = "Please enter a valid email address!"
+    # check if password is valid
     elif not Utilities.secure_password(password):
-        new_user = False
+        flash_massage = True
         message = "Please enter a more secure password!"
     else:
-        username = Utilities.parse(username)[1]
+        # parse the username- reject if not accepted
+        accepted, username = Utilities.parse(username)
 
-        # see if username already exists
-        result = users_get_email(username)
-        if result is not None:
-            # username already exists
-            message = "This username already exists"
+    if(flash_massage):
+        return False, message
+
+
+        if not accepted:
+            message = "Sorry that username is not valid"
         else:
-            # see if the email address is already used
-            result = users_search_user(email)
+            # see if username already exists
+            result = users_get_email(username)
             if result is not None:
-                # email already exists
-                sendEmail(email, "Hi there "+username+" !\nThis email address has already been used to sign up to Brickin' It :o. Please log in instead!")
-                sent = True
+                # username already exists
+                message = "This username already exists"
             else:
-                # new email
-                hashedPass = hash(password)
-                inserted = users_insert((email, username, hashedPass))
-                sent = False
-                if inserted:
+                # see if the email address is already used
+                result = users_search_user(email)
+                if result is not None:
+                    # email already exists
+                    sent = sendEmail(email, "Hi there "+username+" !\nThis email address has already been used to sign up to Brickin' It :o. Please log in instead!")
 
-                    new_user = True
-                    sent = sendEmail(email, "Hi there "+username+" !\nYou have created an account with Brickin' It! :D\n You can now log in!")
                 else:
-                    sent = sendEmail(email, "Hi there "+username+" !\nUnfortunately we couldn't create an account for you :( Please try again later")
-            if sent:
-                message = "An email has been sent to: " + email +" Please check your inbox for more details!"
-            else:
-                message = "Sign up unsuccessful, please try again later"
+                    # new email- try to insert user into the db
+                    inserted = users_insert((email, username, password))
+                    if inserted:
+                        # user has been inserted sucessfully, send email to user
+                        new_user = True
+                        sent = sendEmail(email, "Hi there "+username+" !\nYou have created an account with Brickin' It! :D\n You can now log in!")
+                    else:
+                        # new user has not been inserted, send email to user
+                        sent = sendEmail(email, "Hi there "+username+" !\nUnfortunately we couldn't create an account for you :( Please try again later")
+                if sent:
+                    # inform user that
+                    message = "An email has been sent to: " + email +" Please check your inbox for more details!"
+                else:
+                    message = "Sign up unsuccessful, please try again later"
 
     return new_user, message
 
@@ -445,17 +456,20 @@ def sendEmail(address, message):
     email['Subject'] = "Brickin' it"
     email.set_content(message)
 
+    list = Utilities.readFile("pass.txt")
+    list[1] = datetime.strptime(list[1], "%d/%m/%Y %H:%M:%S:%f")
+    password = Utilities.decrypt(list[0], list[1])
     try:
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.ehlo()
-        server.login("username", "password")
+        server.login("group08.studyplanner@gmail.com", password)
         server.send_message(email)
         server.close()
         print("sent!")
     except smtplib.SMTPException as e:
         print("ERROR: ")
         print(e)
-        server.close()
+       # server.close()
         return False
     return True
 

@@ -7,7 +7,7 @@ slash /: &#47;
 back slash \: &#92;
 
 """
-
+import csv
 import re
 from datetime import datetime
 import time
@@ -159,8 +159,25 @@ def hash(text, hash_time):
         cipher_text += str(hashed)
     return cipher_text
 
+# Function to read a csv file, add each row into a list and return the list
+def readFile(aFile):
+    file = open(aFile, "r")
+    aList = []
+    for each in file.readlines():
+        aList.append(each.replace("\n", ''))
+    file.close()
+    return aList
 
-# if __name__ == '__main__':
+
+# Function to write to a list and save back to csv file
+def writeFile(aList, aFile):
+    file = open(aFile, "w")
+    for each in aList:
+        file.write(each + "\n")
+    file.close()
+
+#if __name__ == '__main__':
+
 #     text = input("enter some text to encrypt and decrypt: ")
 #     cipher, encrypt_time = encrypt(text)
 #     print(cipher)
