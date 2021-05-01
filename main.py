@@ -75,7 +75,7 @@ def writeFile(aList, aFile):
     with open(aFile, 'w', newline='') as outFile:
         writer = csv.writer(outFile)
         writer.writerows(aList)
-    return
+
 
 
 # Sets default route to homepage
