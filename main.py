@@ -245,6 +245,7 @@ def search():
     return render_template('searchResults.html', **context)
 
 
+
 # my profile
 @app.route('/profile')
 @std_context
@@ -293,6 +294,12 @@ def otherProfile(username):
 
 
 
+# other profile
+@app.route('/captcha')
+@std_context
+def captcha():
+    context = request.context
+    return render_template('captcha.html', **context)
 
 
 if __name__ == '__main__':
