@@ -10,10 +10,16 @@ from sqlite3 import Error
 from random import random
 from datetime import datetime
 from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import smtplib
 
 import Utilities
 DATABASE = r"sqlite.db"
+
+EMAIL_EXISTS = "You already have an account with this email address! Please log in to continue!"
+USER_CREATE = "You have sucessfully made an account! Please log in to continue!"
+
 
 """
 only authorises select queries
@@ -392,69 +398,82 @@ password: password from form
 returns: mesage 
 """
 def signUp(email, username, password):
-    new_user = False
-    password_secure = True
+    flash_message = False
     message = ""
-    sent = False
-    flash_massage = False
-
-    # chekc if email is valid
+    # check if email is valid
     if not Utilities.is_email(email):
-        flash_massage = True
+        flash_message = True
         message = "Please enter a valid email address!"
     # check if password is valid
     elif not Utilities.secure_password(password):
-        flash_massage = True
+        flash_message = True
         message = "Please enter a more secure password!"
     else:
         # parse the username- reject if not accepted
         accepted, username = Utilities.parse(username)
+        if not accepted:
+            flash_message = True
+            message = "Please enter a valid username"
+        # search for username on DB
+        result = users_get_email(username)
+        if result is not None:
+            flash_message = True
+            message = "That username is already taken"
 
-    if(flash_massage):
+
+    if(flash_message):
+        # if any of the fields are invalid, send flash message
         return False, message
 
-
-        if not accepted:
-            message = "Sorry that username is not valid"
+    message = None
+    user_inserted = False
+    # password, email and username are valid
+    # check if email already linked to an account
+    result = users_search_user(email)
+    if result is not None:
+        # email linked to account
+        sendEmail(email, [username, EMAIL_EXISTS])
+    else:
+        # create a new user
+        user_inserted = users_insert((email, username, password))
+        if user_inserted:
+            # send email if user has been inserted
+            sendEmail(email, [username, USER_CREATE])
         else:
-            # see if username already exists
-            result = users_get_email(username)
-            if result is not None:
-                # username already exists
-                message = "This username already exists"
-            else:
-                # see if the email address is already used
-                result = users_search_user(email)
-                if result is not None:
-                    # email already exists
-                    sent = sendEmail(email, "Hi there "+username+" !\nThis email address has already been used to sign up to Brickin' It :o. Please log in instead!")
 
-                else:
-                    # new email- try to insert user into the db
-                    inserted = users_insert((email, username, password))
-                    if inserted:
-                        # user has been inserted sucessfully, send email to user
-                        new_user = True
-                        sent = sendEmail(email, "Hi there "+username+" !\nYou have created an account with Brickin' It! :D\n You can now log in!")
-                    else:
-                        # new user has not been inserted, send email to user
-                        sent = sendEmail(email, "Hi there "+username+" !\nUnfortunately we couldn't create an account for you :( Please try again later")
-                if sent:
-                    # inform user that
-                    message = "An email has been sent to: " + email +" Please check your inbox for more details!"
-                else:
-                    message = "Sign up unsuccessful, please try again later"
+            message = "Sorry! Unable to sign up at this time, please try again later"
 
-    return new_user, message
+    if message is None:
+        message = "An email has been sent to " + email + " please check your inbox for details!"
+    return user_inserted, message
 
-def sendEmail(address, message):
+
+def sendEmail(address, content):
     sender = 'Brickin\' it! <email>'
 
-    email = EmailMessage()
+    email = MIMEMultipart('alternative')
     email['From'] = sender
     email['To'] = address
     email['Subject'] = "Brickin' it"
-    email.set_content(message)
+
+
+    text = "Hi there {username}!\n {message}".format(username = content[0], message = content[1])
+
+    html = """\
+    <html>
+    <head></head>
+    <body>
+        <h3>Hi there {username}!</h3>
+        <p>{message}</p> 
+    </body>
+    </html>
+    """.format(username = content[0], message = content[1])
+
+
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(html, 'html')
+    email.attach(part1)
+    email.attach(part2)
 
     list = Utilities.readFile("pass.txt")
     list[1] = datetime.strptime(list[1], "%d/%m/%Y %H:%M:%S:%f")
@@ -506,5 +525,6 @@ def search(term):
 
 
 
-
+# if __name__ == '__main__':
+#     sendEmail("katerina.holdsworth@gmail.com", ["username", "here is a nice message :)"])
 

@@ -158,9 +158,16 @@ def userSignUp():
         username = request.form['username']
         password = request.form['password']
         result = DBConnect.signUp(email, username, password)
-        context['message'] = result[1]
     else:
-        flash("Please sign out to create a new account.")
+
+        flash("Oops! Looks like your already logged in!", "warning")
+        return redirect("/")
+    # check if sign up was successful or not
+    if result[0]:
+        flash(result[1], "success")
+        return redirect("/")
+    else:
+        flash(result[1],"warning")
 
     return render_template('signUp.html', **context)
 
