@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+
+    <div class="col-md-4 p-2 d-flex justify-content-center">
+        <div class="sticky-top" style="top: 70px">
+            <div class="jumbotron" style="min-width: auto; max-width: 320px">
+                <img src="/static/user_images/{{image}}.png" alt="User Profile Image" class="rounded-circle mx-auto d-block"
+                     style="max-width: 50%">
+                <br>
+                <h1 class="text-center">{{username}}</h1>
+                <hr class="my-4">
+                <p class="text-center">{{bio}}</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Left column with posts-->
+    <div class="col-md-8  p-2">
+
+        <!-- Box for each post -->
+        {%for item in list%}
+        <div class="jumbotron pt-2">
+            <div class="container-fluid pt-3 pb-2 ">
+                <div id="PostTitle" class="row">
+                    <h2>{{item[0]}}</h2>
+                    <span class="font-weight-light pl-3 pt-2 justify-content-end">
+                                        <small> {{item[1]}}
+                                            <span class="font-italic">
+                                                {{item[2]}}
+                                            </span>
+                                        </small>
+                                    </span>
+                    <span class="font-weight-light pl-3 pt-2 justify-content-end">
+                                        <small>
+                                            <span class="font-weight-bold">
+                                                {{item[4]}}
+                                            </span>
+                                        </small>
+                                    </span>
+                </div>
+
+                <div id="PostMain" class="row rounded border border-white p-3 bg-light">
+                    {{item[3]}}
+                </div>
+
+                <!-- Box for each comment - TO DO need to make into list -->
+                <span id="CommentsHeader" class="row mt-2 ml-3 ">
+                    <h5>Comments</h5>
+                </span>
+
+
+                <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
+                {%for comment in item[7]%}
+                <div id="Comments" class="row">
+                    <div id="CommentContainer" class="container-fluid p-2">
+                        <div class="row">
+                            <div class="col-2 align-self-center">
+
+                                <div id="CommenterImg" class="col-12">
+                                    <div class="row d-flex justify-content-center">
+                                        <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
+                                             class="rounded-circle"
+                                             style="max-width: 35px">
+                                    </div>
+                                    <div class="row d-flex justify-content-center">
+                                        <p class="font-weight-bold">
+                                            {{comment[1]}} </p>
+                                    </div>
+                                    {% if comment[5] %}
+                                    <div class="row d-flex justify-content-center">
+                                        <button type="button" class="btn btn-danger"
+                                                aria-label="Delete comment">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                 fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                <path fill-rule="evenodd"
+                                                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                            <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
+                                <div class="row">
+                                    <div id="Comment" class="col-12"><span class="text-left">
+                                        {{comment[2]}}</span>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+
+                                    <div class="col-12">
+                                        <div class="row mx-auto justify-content-end ">
+                                     <span class="font-weight-light ">
+                                        <small> {{comment[3]}}
+                                            <span class="font-italic align-bottom">
+                                                {{comment[4]}}
+                                            </span>
+                                        </small>
+                                    </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                {% endfor %}
+
+
+                <!-- Add comments box if logged in -->
+                <form class="mt-2">
+                    <div class="form-row mb-2 mt-2">
+                        {% if loggedIn %}
+                        <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts..">
+                        {% else %}
+                        <input type="text" class="form-control" placeholder="Please log in to add a comment." disabled>
+                        {% endif %}
+                    </div>
+                    <div class="form-row justify-content-end">
+
+                        <div class="row ">
+                            <!-- Delete button if user who posted the post was who is logged in-->
+                            {% if item[5] %}
+                            <button type="submit" class="btn btn-danger p-1 mr-2">Delete Post</button>
+                            {% endif %}
+                            {% if loggedIn %}
+                            <button type="submit" class="btn btn-primary p-1">Add Comment</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+</div>
+
+
+<!-- Profile section-->
+
+
+{% endblock %}
