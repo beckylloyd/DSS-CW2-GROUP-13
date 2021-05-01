@@ -32,7 +32,9 @@ def make_session_permanent():
             delta = now - last_active
             if delta.seconds > 600:
                 session['last_active'] = now
-                flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ", "warning")
+                flash(
+                    "Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ",
+                    "warning")
                 session.pop('userid', None)
                 session.pop('username', None)
                 return redirect("/logIn")
@@ -40,9 +42,9 @@ def make_session_permanent():
             pass
 
     try:
-       session['last_active'] = now
+        session['last_active'] = now
     except:
-       pass
+        pass
 
 
 def std_context(f):
@@ -102,6 +104,11 @@ def index():
 @std_context
 def logIn():
     context = request.context
+    if context['loggedIn']:
+        flash("Oops you need to log out to view that page!", "warning")
+        return redirect('/')
+
+    context = request.context
     return render_template('logIn.html', **context)
 
 
@@ -115,13 +122,15 @@ def userLogIn():
         email = request.form['email']
         password = request.form['password']
         result = DBConnect.login(email, password)
-        context['message'] = result[1]
+        if not result[0]:
+            flash("Error logging in, please try again.", "danger")
+
         if result[0]:
             session['userid'] = DBConnect.users_get_id(email)
             session['username'] = DBConnect.users_get_username(session['userid'])
             return redirect('/')
     else:
-        context['message'] = "User already logged in :("
+        flash("Oops, a user is already logged in!")
 
     return render_template('logIn.html', **context)
 
@@ -129,6 +138,11 @@ def userLogIn():
 @app.route('/signUp')
 @std_context
 def signUp():
+    context = request.context
+    if context['loggedIn']:
+        flash("Oops you need to log out to view that page!", "warning")
+        return redirect('/')
+
     context = request.context
     return render_template('signUp.html', **context)
 
@@ -145,6 +159,7 @@ def userSignUp():
         password = request.form['password']
         result = DBConnect.signUp(email, username, password)
     else:
+
         flash("Oops! Looks like your already logged in!", "warning")
         return redirect("/")
     # check if sign up was successful or not
@@ -153,9 +168,11 @@ def userSignUp():
         return redirect("/")
     else:
         flash(result[1],"warning")
+
     return render_template('signUp.html', **context)
 
 @app.route('/userLogOut')
+@std_context
 def userLogOut():
     session.pop('userid', None)
     session.pop('username', None)
@@ -163,17 +180,21 @@ def userLogOut():
 
 # used in session auto log out modal to update last active in python
 @app.route('/ajaxLogOut', methods=['GET', 'POST'])
+@std_context
 def ajaxLogOut():
     session.pop('userid', None)
     session.pop('username', None)
     flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ",
           "warning")
-    return json.dumps({'status': 'OK', 'message': "Your session has expired due to 10 minutes of inactivity, please sign back in to access your account." });
+    return json.dumps({'status': 'OK',
+                       'message': "Your session has expired due to 10 minutes of inactivity, please sign back in to access your account."});
+
 
 # used in session auto log out modal to update last active in python
 @app.route('/ajaxExtend', methods=['GET', 'POST'])
+@std_context
 def ajaxExtend():
-    return json.dumps({'status': 'OK', 'message': "session extended" });
+    return json.dumps({'status': 'OK', 'message': "session extended"});
 
 # show new post page
 @app.route('/newPost')
@@ -225,10 +246,60 @@ def search():
         datetime = item[3] + " " + item[4]
         title = Utilities.unencode(item[1])
         body = Utilities.unencode(item[2])
-        posts.append([title, body, item[6], item[5],datetime ])
+        posts.append([title, body, item[6], item[5], datetime])
     context['search_term'] = results[0]
     context['rows'] = posts
     return render_template('searchResults.html', **context)
+
+
+# my profile
+@app.route('/profile')
+@std_context
+def profile():
+    context = request.context
+    if not context['loggedIn']:
+        flash("Oops you need to log in to view that page!", "warning")
+        return redirect('/')
+
+    context = request.context
+
+    # Get user details
+    # array of [image text name, user name, bio] (SHOULD BE ABLE TO ADD THIS INTO LOG IN SO ITS SAVED IN THE SESSION)
+    context['username'] = "username"
+    context['image'] = "LEGO_PIRATE"
+    context['bio'] = "This is a bio about someone who really loves LEGO. Like really loves LEGO."
+
+    # Get post details into array of arrays - given the username into database method
+    # Single array contain [Title, date, time, post text, username, post_id]
+    # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
+    # for each loop to append array of array of comments to end of each post array
+    # Single array contains [image text name, user name, comment, date, time]
+    # for each loop in each comment to check if boolean of if user name = logged in user
+
+    context['list'] = [["TITLE", "01/01/2021", "12:54pm",
+                        "POST TEXT", "username", True,
+                        [["LEGO_NURSE", "commenter_name", False, "comment", "01/01/21", "10:00am"],
+                         ["LEGO_Pirate", "username", True, "comment back", "01/01/21", "10:07am"]]]
+                       ]
+    return render_template('profile.html', **context)
+
+
+# other profile
+@app.route('/otherProfile')
+@std_context
+def otherProfile(username):
+    context = request.context
+
+    # get user details based on username
+    # results = DBConnect.getUserdetails(username)
+    # context['username'] = results[1]
+    # context['image'] = results[2]
+    # context['bio'] = results[3]
+
+    return render_template('profile.html', **context)
+
+
+
 
 
 if __name__ == '__main__':
