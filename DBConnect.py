@@ -420,8 +420,8 @@ def signUp(email, username, password):
                 sent = True
             else:
                 # new email
-                hashedPass = hash(password)
-                inserted = users_insert((email, username, hashedPass))
+
+                inserted = users_insert((email, username, password))
                 sent = False
                 if inserted:
 

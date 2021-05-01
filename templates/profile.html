@@ -7,13 +7,12 @@
     <div class="col-md-4 p-2 d-flex justify-content-center">
         <div class="sticky-top" style="top: 70px">
             <div class="jumbotron" style="min-width: auto; max-width: 320px">
-                <img src="/static/user_images/user.png" alt="User Profile Image" class="rounded-circle mx-auto d-block"
+                <img src="/static/user_images/{{image}}.png" alt="User Profile Image" class="rounded-circle mx-auto d-block"
                      style="max-width: 50%">
                 <br>
-                <h1 class="text-center">my_user_name</h1>
+                <h1 class="text-center">{{username}}</h1>
                 <hr class="my-4">
-                <p class="text-center">This is a bio about someone who really loves LEGO. Like really loves
-                    LEGO.</p>
+                <p class="text-center">{{bio}}</p>
             </div>
         </div>
     </div>
@@ -27,21 +26,25 @@
         <div class="jumbotron pt-2">
             <div class="container-fluid pt-3 pb-2 ">
                 <div id="PostTitle" class="row">
-                    <h2>Modular Wishlist</h2>
+                    <h2>{{item[0]}}</h2>
+                    <span class="font-weight-light pl-3 pt-2 justify-content-end">
+                                        <small> {{item[1]}}
+                                            <span class="font-italic">
+                                                {{item[2]}}
+                                            </span>
+                                        </small>
+                                    </span>
+                    <span class="font-weight-light pl-3 pt-2 justify-content-end">
+                                        <small>
+                                            <span class="font-weight-bold">
+                                                {{item[4]}}
+                                            </span>
+                                        </small>
+                                    </span>
                 </div>
+
                 <div id="PostMain" class="row rounded border border-white p-3 bg-light">
-                    Hello Everyone,
-
-                    I know we are a while off hearing about the next Modular for next year, but I would love to hear
-                    everyone's wishlists for future modulars. I'm keen to see what the common wishes are.
-
-                    I have forever wanted Lego to do a Museum modular, I unfortunately don't have time to create my own
-                    MOC of one, so a set would be great to see one day. I thought they could have different parts packs
-                    similar to the minifigures ones with a different themes to fill in your museum exhibitions - eg
-                    Egyptian, Roman, natural history, arts, Lego History. I know it will never happen but one can dream
-                    :grin:
-
-                    What does everyone else want to see as future sets?
+                    {{item[3]}}
                 </div>
 
                 <!-- Box for each comment - TO DO need to make into list -->
@@ -50,7 +53,8 @@
                 </span>
 
 
-                    <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
+                <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
+                {%for comment in item[7]%}
                 <div id="Comments" class="row">
                     <div id="CommentContainer" class="container-fluid p-2">
                         <div class="row">
@@ -58,14 +62,15 @@
 
                                 <div id="CommenterImg" class="col-12">
                                     <div class="row d-flex justify-content-center">
-                                        <img src="/static/user_images/LEGO_NURSE.png" alt="User Profile Image"
+                                        <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
                                              class="rounded-circle"
                                              style="max-width: 35px">
                                     </div>
                                     <div class="row d-flex justify-content-center">
                                         <p class="font-weight-bold">
-                                        nhs_4eva </p>
+                                            {{comment[1]}} </p>
                                     </div>
+                                    {% if comment[5] %}
                                     <div class="row d-flex justify-content-center">
                                         <button type="button" class="btn btn-danger"
                                                 aria-label="Delete comment">
@@ -77,29 +82,25 @@
                                             </svg>
                                         </button>
                                     </div>
+                                    {% endif %}
                                 </div>
 
                             </div>
                             <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
                                 <div class="row">
                                     <div id="Comment" class="col-12"><span class="text-left">
-                                        I for one think that now with the Police Station Lego will finally touch on more
-                                        Town Infrastructure like bringing us a School or Hospital. maybe even a big
-                                        College with small Sports Yard.
-                                        Myself, I would actually like a nice Apartment Complex in Modular Style, with
-                                        Balconies and a lot of Flowers.</span>
+                                        {{comment[2]}}</span>
                                     </div>
 
                                 </div>
                                 <div class="row">
-                                    <div class="col-9">
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="row mx-auto justify-content-end">
-                                     <span class="font-weight-light">
-                                        <small> 01/01/2021
-                                            <span class="font-italic">
-                                                12:54pm
+
+                                    <div class="col-12">
+                                        <div class="row mx-auto justify-content-end ">
+                                     <span class="font-weight-light ">
+                                        <small> {{comment[3]}}
+                                            <span class="font-italic align-bottom">
+                                                {{comment[4]}}
                                             </span>
                                         </small>
                                     </span>
@@ -115,73 +116,28 @@
                     </div>
 
                 </div>
-
-
-
-                                   <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
-                <div class="row">
-                    <div class="container-fluid p-2">
-                        <div class="row">
-                            <div class="col-2 align-self-center">
-
-                                <div class="col-12">
-                                    <div class="row d-flex justify-content-center">
-                                        <img src="/static/user_images/LEGO_BATMAN.png" alt="User Profile Image"
-                                             class="rounded-circle"
-                                             style="max-width: 35px">
-                                    </div>
-                                    <div class="row d-flex justify-content-center">
-                                        <p class="font-weight-bold">
-                                        BATM4N </p>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                            <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
-                                <div class="row">
-                                    <div  class="col-12"><span class="text-left">
-                                     I like batman.</span>
-                                    </div>
-
-                                </div>
-                                <div class="row">
-                                    <div class="col-9">
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="row mx-auto justify-content-end">
-                                     <span class="font-weight-light">
-                                        <small> 01/04/2021
-                                            <span class="font-italic">
-                                                12:57pm
-                                            </span>
-                                        </small>
-                                    </span>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
+                {% endfor %}
 
 
                 <!-- Add comments box if logged in -->
                 <form class="mt-2">
                     <div class="form-row mb-2 mt-2">
+                        {% if loggedIn %}
                         <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts..">
+                        {% else %}
+                        <input type="text" class="form-control" placeholder="Please log in to add a comment." disabled>
+                        {% endif %}
                     </div>
                     <div class="form-row justify-content-end">
 
                         <div class="row ">
                             <!-- Delete button if user who posted the post was who is logged in-->
+                            {% if item[5] %}
                             <button type="submit" class="btn btn-danger p-1 mr-2">Delete Post</button>
+                            {% endif %}
+                            {% if loggedIn %}
                             <button type="submit" class="btn btn-primary p-1">Add Comment</button>
+                            {% endif %}
                         </div>
                     </div>
                 </form>
