@@ -646,5 +646,6 @@ def search(term):
 
 
 
-
+if __name__ == '__main__':
+    users_insert(("a", "a", "a"))
 

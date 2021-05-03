@@ -456,7 +456,7 @@ def deleteComment():
     except:
         last_url = None
 
-    value = request.form['delComment']
+    value = request.form['hidden']
     try:
         DBConnect.comments_delete(value)
         flash("Comment deleted sucessfully!", "info")
