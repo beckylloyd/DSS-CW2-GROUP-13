@@ -3,6 +3,7 @@ import json
 import locale
 import os
 import calendar
+import random
 from functools import wraps
 from flask import Flask, render_template, make_response, session, redirect, app, flash
 from flask import request
@@ -11,24 +12,43 @@ from datetime import timedelta
 
 import DBConnect
 import Utilities
+
 app = Flask(__name__)
 
 # Sets date and time format
 dateFormat = '%d/%m/%Y'
 dateTimeFormat = dateFormat + " %H:%M"
 
+# CAPTCHA DETAILS
+# img number, x min, x max, y min, y max
+captchaCoords = {1: [230, 260, 39, 67],
+                 2: [40, 65, 105, 136],
+                 3: [138, 164, 267, 292],
+                 4: [73, 100, 266, 291],
+                 5: [266, 292, 136, 165],
+                 6: [200, 228, 9, 37],
+                 7: [170, 195, 10, 36],
+                 8: [72, 98, 42, 67],
+                 9: [38, 65, 237, 260],
+                 10: [104, 131, 138, 164]}
+numberOfImages = random.randint(1, 10)
+imageNumbers = []
+
+mail = ''
+
 app.secret_key = os.urandom(32)
 
 # Sets locale to GB for currency
 locale.setlocale(locale.LC_ALL, 'en_GB')
 
+
 @app.before_request
 def make_session_permanent():
+
     now = datetime.now()
     if session.get("userid") is not None:
         try:
             last_active = session['last_active']
-            print(last_active)
             delta = now - last_active
             if delta.seconds > 600:
                 session['last_active'] = now
@@ -50,6 +70,7 @@ def make_session_permanent():
 def std_context(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
+        global captchaComplete
         context = {}
         request.context = context
         if 'userid' not in session or 'userid' in session is None:
@@ -75,7 +96,6 @@ def writeFile(aList, aFile):
     with open(aFile, 'w', newline='') as outFile:
         writer = csv.writer(outFile)
         writer.writerows(aList)
-
 
 
 # Sets default route to homepage
@@ -108,13 +128,13 @@ def logIn():
         flash("Oops you need to log out to view that page!", "warning")
         return redirect('/')
 
-    context = request.context
     return render_template('logIn.html', **context)
 
 
 @app.route('/userLogIn', methods=['GET', 'POST'])
 @std_context
 def userLogIn():
+    global mail
     context = request.context
 
     context['message'] = ""
@@ -126,13 +146,60 @@ def userLogIn():
             flash("Error logging in, please try again.", "danger")
 
         if result[0]:
-            session['userid'] = DBConnect.users_get_id(email)
-            session['username'] = DBConnect.users_get_username(session['userid'])
-            return redirect('/')
+            mail = email
+            setCaptcha()
+            return render_template('captcha.html', **context)
     else:
         flash("Oops, a user is already logged in!")
 
     return render_template('logIn.html', **context)
+
+
+def setCaptcha():
+    global numberOfImages
+    global imageNumbers
+    numberOfImages = random.randint(1, 5)
+    imageNumbers = random.sample(range(1, 11), numberOfImages)
+
+
+@app.route('/getCaptcha', methods=['GET', 'POST'])
+@std_context
+def getCaptcha():
+    global mail
+    global imageNumbers
+
+    if imageNumbers:
+        return json.dumps({'status': 'OK', 'image': imageNumbers.pop(0)});
+    else:
+        session['userid'] = DBConnect.users_get_id(mail)
+        session['username'] = DBConnect.users_get_username(session['userid'])
+        return json.dumps({'status': 'all captcha complete'})
+
+
+@app.route('/validateCaptcha', methods=['GET', 'POST'])
+@std_context
+def validateCaptcha():
+    global captchaCoords
+
+    imageNumber = int(request.form['imageNumber'])
+    x = int(request.form['x'])
+    y = int(request.form['y'])
+    xCorrect = False
+    yCorrect = False
+
+    coordArray = captchaCoords[imageNumber]
+
+    if coordArray[0] <= x <= coordArray[1]:
+        xCorrect = True
+
+    if coordArray[2] <= y <= coordArray[3]:
+        yCorrect = True
+
+    if xCorrect and yCorrect:
+        return json.dumps({'status': 'OK'})
+    else:
+        return json.dumps({'status': 'validation failed'})
+
 
 # logs out user from session, called from log out button
 @app.route('/signUp')
@@ -143,7 +210,6 @@ def signUp():
         flash("Oops you need to log out to view that page!", "warning")
         return redirect('/')
 
-    context = request.context
     return render_template('signUp.html', **context)
 
 
@@ -164,12 +230,14 @@ def userSignUp():
 
     return render_template('signUp.html', **context)
 
+
 @app.route('/userLogOut')
 @std_context
 def userLogOut():
     session.pop('userid', None)
     session.pop('username', None)
     return redirect("/logIn")
+
 
 # used in session auto log out modal to update last active in python
 @app.route('/ajaxLogOut', methods=['GET', 'POST'])
@@ -188,6 +256,7 @@ def ajaxLogOut():
 @std_context
 def ajaxExtend():
     return json.dumps({'status': 'OK', 'message': "session extended"});
+
 
 # show new post page
 @app.route('/newPost')
@@ -245,7 +314,6 @@ def search():
     return render_template('searchResults.html', **context)
 
 
-
 # my profile
 @app.route('/profile')
 @std_context
@@ -293,13 +361,12 @@ def otherProfile(username):
     return render_template('profile.html', **context)
 
 
-
-# other profile
-@app.route('/captcha')
-@std_context
-def captcha():
-    context = request.context
-    return render_template('captcha.html', **context)
+# # other profile
+# @app.route('/captcha')
+# @std_context
+# def captcha():
+#     context = request.context
+#     return render_template('captcha.html', **context)
 
 
 if __name__ == '__main__':

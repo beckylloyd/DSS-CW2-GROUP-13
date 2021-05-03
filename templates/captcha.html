@@ -1,6 +1,4 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% include 'logIn.html' %}
 
 <body>
 
@@ -9,23 +7,34 @@
      aria-hidden="true" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header justify-content-center  mx-auto my-auto">
                 <h5 class="modal-title" id="CaptchaTitle">We just need to check you're human!</h5>
             </div>
             <div class="modal-body">
-                <div id="mouseLocation">
-                    X = 0
-                    <br>
-                    Y = 0
-                </div>
-                <div id="message" class="justify-content-center">
-                    Click on the green flag(s) in the box below.
-                </div>
-                <div id="target">
-                    <img id='captcha' src="/static/CAPTCHA/1.png" alt="minesweeper">
+                <div class="container-fluid">
+                    <div class="row justify-content-center  mx-auto my-auto">
+                        <div id="message" class="justify-content-center" style="display: block">
+                            Click on the green flag(s) in the box below.
+                        </div>
+                    </div>
+                    <div class="row justify-content-center mx-auto my-auto">
+                        <div id="target">
+                            <img id='captcha' src="/static/CAPTCHA/1.png" alt="minesweeper"
+                                 onclick="getImageCoords(event,this);">
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-center">
+                        <button onclick="buttonClick()" id="dismissButton" type="button" class="btn btn-success"
+                                aria-label="Dismiss" value="Continue"><span> Continue
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-check2-circle" viewBox="0 0 16 16">
+                                <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z"/>
+                                <path d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z"/>
+                            </svg></span>
+                        </button>
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -34,5 +43,3 @@
 </body>
 </html>
 
-
-{% endblock %}
