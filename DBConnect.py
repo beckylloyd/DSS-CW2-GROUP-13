@@ -429,15 +429,34 @@ def comments_from_post(post_id):
             username = users_get_username(comment[5])
             user = users_get_details(username)
             full_comments.append([user[1], username, comment[1], comment[2], comment[3], comment[0]])
+    full_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
     return full_comments
 
 # add a comment (comment, post_id, user_id) into the db
 def comments_insert(comment):
     # check when the last comment was inserted by this user
+    # get them in date order
+
+    all_comments = select_all("SELECT * FROM comments where user_id=?;", (str(comment[2])))
+    if all_comments is not None:
+
+        all_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[2] + " " + x[3], "%d/%m/%Y %H:%M"))
+        # get the last posts date and time
+        last_date = datetime.strptime(all_comments[0][2], "%d/%m/%Y")
+        last_time = datetime.strptime(all_comments[0][3], "%H:%M")
+        # check if last post on same day
+        if (last_date.date() == datetime.now().date()):
+            # check time since last post
+            time_diff = (datetime.now() - last_time).seconds / 60
+            if (time_diff < 2):
+                # last post less than 5 mins ago, dont post
+                return False
+
 
     sql_query = "INSERT INTO comments(comment_id, comment, date, time, post_id, user_id) VALUES (?, ?, ?, ?, ?, ?);"
     all_comments= select_all("SELECT * FROM comments;", ())
     comment_id = all_comments[len(all_comments) - 1][0] + 1
+
 
     # parse comment text before adding
     body = Utilities.parse(comment[0])[1]
@@ -448,19 +467,7 @@ def comments_insert(comment):
     if (user is None) or (post is None):
         # either is not valid, don't insert
         return False
-    # get them in date order
-    all_comments = select_all("SELECT * FROM comments where user_id=?;", (user))
-    all_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[2] + " " + x[3], "%d/%m/%Y %H:%M"))
-    # get the last posts date and time
-    last_date = datetime.strptime(all_comments[0][2], "%d/%m/%Y")
-    last_time = datetime.strptime(all_comments[0][3], "%H:%M")
-    # check if last post on same day
-    if (last_date.date() == datetime.now().date()):
-        # check time since last post
-        time_diff = (datetime.now() - last_time).seconds / 60
-        if (time_diff < 2):
-            # last post less than 5 mins ago, dont post
-            return False
+
 
     # get current date and time
     date = datetime.now().strftime("%d/%m/%Y")
@@ -636,4 +643,8 @@ def search(term):
             conn.close()
 
     return term, rows
+
+
+
+
 

@@ -419,8 +419,9 @@ def commentsBox():
         post_id = request.form['add']
         add = True
         comment = request.form['comment']
+
         added = DBConnect.comments_insert((comment, post_id, context['userid']))
-        print(added)
+
         if added:
             flash("Comment added sucessfully!", "info")
         else:
