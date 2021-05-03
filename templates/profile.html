@@ -21,13 +21,13 @@
 
     <!-- Left column with posts-->
     <div class="col-md-8  p-2">
-
+        {% if list %}
         <!-- Box for each post -->
         {%for item in list%}
         <div class="jumbotron pt-2">
             <div class="container-fluid pt-3 pb-2 ">
                 <div id="PostTitle" class="row">
-                    <h2>{{item[0]}}</h2>
+                    <a href="/specificPost/{{item[5]}}"> <h2 >{{item[0]}}</h2></a>
                     <span class="font-weight-light pl-3 pt-2 justify-content-end">
                                         <small> {{item[1]}}
                                             <span class="font-italic">
@@ -76,12 +76,12 @@
                                         <form method="post" action="deleteComment">
                                         <input type="submit" class="btn btn-danger p-1 mr-2"
                                                 aria-label="Delete comment" value="{{comment[5]}}" name="delComment">
-<!--                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"-->
-<!--                                                 fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">-->
-<!--                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>-->
-<!--                                                <path fill-rule="evenodd"-->
-<!--                                                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>-->
-<!--                                            </svg>-->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                 fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                <path fill-rule="evenodd"
+                                                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                            </svg>
                                         </input>
                                         </form>
                                     </div>
@@ -136,10 +136,10 @@
                         <div class="row ">
                             <!-- Delete button if user who posted the post was who is logged in-->
                             {% if item[6] %}
-                            <button type="submit" class="btn btn-danger p-1 mr-2" value="{{item[5]}}" name="delete">Delete Post</button>
+                            <button type="submit" class="btn btn-danger p-1 mr-2" value="{{item[5]}}" onclick="window.history.back()" name="delete">Delete Post</button>
                             {% endif %}
                             {% if loggedIn %}
-                            <button type="submit" class="btn btn-primary p-1" value="{{item[5]}}" name="add">Add Comment</button>
+                            <button type="submit" class="btn btn-primary p-1" value="{{item[5]}}" onclick="window.history.back()" name="add">Add Comment</button>
                             {% endif %}
                         </div>
                     </div>
@@ -148,7 +148,15 @@
         </div>
         {% endfor %}
     </div>
+{% else %}
 
+    <div class="jumbotron ">
+        <span class="d-flex justify-content-center">
+            It seems {{username}} has not created any posts yet!
+        </span>
+
+            </div>
+          {% endif %}
 
 </div>
 

@@ -56,6 +56,8 @@ def make_session_permanent():
                     "warning")
                 session.pop('userid', None)
                 session.pop('username', None)
+                session.pop('bio', None)
+                session.pop('image', None)
                 return redirect("/logIn")
         except:
             pass
@@ -175,6 +177,8 @@ def getCaptcha():
     else:
         session['userid'] = DBConnect.users_get_id(mail)
         session['username'] = DBConnect.users_get_username(session['userid'])
+        session['image'] = DBConnect.users_get_details(session['username'])[1]
+        session['bio'] = DBConnect.users_get_details(session['username'])[2]
         return json.dumps({'status': 'all captcha complete'})
 
 
@@ -243,6 +247,8 @@ def userSignUp():
 def userLogOut():
     session.pop('userid', None)
     session.pop('username', None)
+    session.pop('bio', None)
+    session.pop('image', None)
     return redirect("/logIn")
 
 # used in session auto log out modal to update last active in python
@@ -251,6 +257,8 @@ def userLogOut():
 def ajaxLogOut():
     session.pop('userid', None)
     session.pop('username', None)
+    session.pop('bio', None)
+    session.pop('image', None)
     flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ",
           "warning")
     return json.dumps({'status': 'OK',
@@ -319,6 +327,29 @@ def search():
     return render_template('searchResults.html', **context)
 
 
+
+
+@app.route('/specificPost/<int:postID>')
+@std_context
+def specificPost(postID):
+    # [Title, date, time, post text, username, post_id, logged in, [comments]]
+    context = request.context
+
+    if context['loggedIn']:
+        username = session['username']
+    else:
+        username = ""
+
+    context['item'] = DBConnect.posts_get_single(postID, username)
+
+    if context['item']:
+        context['posterUsername'] = context['item'][4]
+        context['image'] = DBConnect.users_get_details(context['item'][4])[1]
+        return render_template('specificPost.html', **context)
+    else:
+        error_page(404)
+
+
 # my profile
 @app.route('/profile')
 @std_context
@@ -327,8 +358,6 @@ def profile():
     if not context['loggedIn']:
         flash("Oops you need to log in to view that page!", "warning")
         return redirect('/')
-
-    context = request.context
 
     # Get user details
     results = DBConnect.users_get_details(session['username'])
@@ -377,10 +406,14 @@ def otherProfile(username):
     all_posts = DBConnect.posts_from_user(results[0])  # [Title, date, time, post text, username, post_id]
 
     # Single array contain [Title, date, time, post text, username, post_id]
-
+    if context['loggedIn']:
+        sessionUsername = session['username']
+    else:
+        sessionUsername = ""
     # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
     for each in all_posts:
-        if(username == session['username']):
+
+        if(username == sessionUsername):
             each.append(True)  # [Title, date, time, post text, username, post_id, logged in]
         else:
             each.append(False)
@@ -390,7 +423,7 @@ def otherProfile(username):
         # for each loop in each comment to check if boolean of if user name = logged in user
         for comment in comments:
 
-            if (comment[1] == session['username']):
+            if (comment[1] == sessionUsername):
                 comment.append(True)
             else:
                 comment.append(False)
@@ -401,11 +434,16 @@ def otherProfile(username):
 
 @app.route('/commentsBox', methods=['GET', 'POST'])
 @app.route('/otherProfile/commentsBox', methods=['GET', 'POST'])
+@app.route('/specificPost/commentsBox', methods=['GET', 'POST'])
 @std_context
 def commentsBox():
     context = request.context
     try:
-        last_url = session['urls'][len(session['urls']) - 2]
+        urlToGet = 2
+        last_url = session['urls'][len(session['urls']) - urlToGet]
+        while "static" in last_url:
+            urlToGet += 1
+            last_url = session['urls'][len(session['urls']) - urlToGet]
     except:
         last_url = None
 
@@ -419,7 +457,7 @@ def commentsBox():
         comment = request.form['comment']
         added = DBConnect.comments_insert((comment, post_id, context['userid']))
         if added:
-            flash("Comment added succesfully!", "info")
+            flash("Comment added successfully!", "info")
         else:
             flash("Sorry, that comment couldn't be posted at this time, try again later", "danger")
     except:
@@ -437,6 +475,8 @@ def commentsBox():
         delete = False
 
     if delete != add and last_url is not None:
+        if delete and "specificPost" in last_url:
+            return redirect('/')
         return redirect(last_url)
     else:
         flash("Uh oh! Something has gone wrong :(", "danger")
@@ -444,6 +484,7 @@ def commentsBox():
 
 @app.route('/deleteComment', methods=['GET', 'POST'])
 @app.route('/otherProfile/deleteComment', methods=['GET', 'POST'])
+@app.route('/specificPost/deleteComment', methods=['GET', 'POST'])
 @std_context
 def deleteComment():
     context= request.context

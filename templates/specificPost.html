@@ -1,6 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
 <input
-    action="action"
-    onclick="window.history.go(-1); return false;"
-    type="submit"
-    value="Back"
+        class="mt-0 mb-5"
+        action="action"
+        onclick="window.history.go(-1); return false;"
+        type="submit"
+        value="Back"
 />
+
+<br>
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="jumbotron pt-2 pb-2 mr-10 ml-10">
+                <img src="/static/user_images/{{image}}.png" alt="User Profile Image"
+                     class="rounded-circle mx-auto d-block"
+                     style="max-width: 10%">
+                <h2 class="text-center pt-0 pb-0" ><a href="/otherProfile/{{item[4]}}">{{item[4]}}</a> </h2>
+                <span class="font-weight-light d-flex justify-content-center">
+                                        <small> {{item[1]}}
+                                                {{item[2]}}
+                                        </small>
+                                    </span>
+            </div>
+        </div>
+        <div class="col-2"></div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="jumbotron pt-2 mr-10 ml-10">
+                <div class="container-fluid pt-3 pb-2 ">
+                    <div id="PostTitle" class="row">
+                        <h2>{{item[0]}}</h2>
+
+
+                    </div>
+
+                    <div id="PostMain" class="row rounded border border-white p-3 bg-light">
+                        {{item[3]}}
+                    </div>
+
+                    <!-- Box for each comment - TO DO need to make into list -->
+                    <span id="CommentsHeader" class="row mt-2 ml-3 ">
+                    <h5>Comments</h5>
+                </span>
+
+
+                    <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
+                    {%for comment in item[7]%}
+                    <div id="Comments" class="row">
+                        <div id="CommentContainer" class="container-fluid p-2">
+                            <div class="row">
+                                <div class="col-2 align-self-center">
+
+                                    <div id="CommenterImg" class="col-12">
+                                        <div class="row d-flex justify-content-center">
+                                            <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
+                                                 class="rounded-circle"
+                                                 style="max-width: 35px">
+                                        </div>
+                                        <div class="row d-flex justify-content-center">
+                                            <a class="font-weight-bold" href="/otherProfile/{{comment[1]}}">
+                                                {{comment[1]}} </a>
+                                        </div>
+                                        {% if comment[6] %}
+                                        <div class="row d-flex justify-content-center">
+                                            <form method="post" action="deleteComment">
+                                                <input type="submit" class="btn btn-danger p-1 mr-2"
+                                                       onclick="window.history.back()"
+                                                       aria-label="Delete comment" value="{{comment[5]}}"
+                                                       name="delComment">
+                                                </input>
+                                            </form>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                                <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
+                                    <div class="row">
+                                        <div id="Comment" class="col-12"><span class="text-left">
+                                        {{comment[2]}}</span>
+                                        </div>
+
+                                    </div>
+                                    <div class="row">
+
+                                        <div class="col-12">
+                                            <div class="row mx-auto justify-content-end ">
+                                     <span class="font-weight-light ">
+                                        <small> {{comment[3]}}
+                                            <span class="font-italic align-bottom">
+                                                {{comment[4]}}
+                                            </span>
+                                        </small>
+                                    </span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    {% endfor %}
+
+
+                    <!-- Add comments box if logged in -->
+                    <form class="mt-2" action="commentsBox" method="post">
+                        <div class="form-row mb-2 mt-2">
+                            {% if loggedIn %}
+                            <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts.."
+                                   name="comment">
+                            {% else %}
+                            <input type="text" class="form-control" placeholder="Please log in to add a comment."
+                                   disabled>
+                            {% endif %}
+                        </div>
+                        <div class="form-row justify-content-end">
+
+                            <div class="row ">
+                                <!-- Delete button if user who posted the post was who is logged in-->
+                                {% if item[6] %}
+                                <button type="submit" class="btn btn-danger p-1 mr-2" value="{{item[5]}}"
+                                        onclick="document.location.href = '/'" name="delete">Delete Post
+                                </button>
+                                {% endif %}
+                                {% if loggedIn %}
+                                <button type="submit" class="btn btn-primary p-1" value="{{item[5]}}"
+                                        onclick="window.history.back()" name="add">Add Comment
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-2"></div>
+    </div>
+
+</div>
+{% endblock %}

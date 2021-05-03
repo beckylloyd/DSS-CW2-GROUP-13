@@ -375,6 +375,23 @@ def posts_delete(id):
     sql_query = "DELETE FROM posts WHERE post_id=?"
     return delete(sql_query, (id,))
 
+# get a single post with all its comments
+def posts_get_single(post_id, username):
+    #[Title, date, time, post text, username, post_id, logged in, [comments]]
+    sql_query = "SELECT title, date, time, body, user_id, post_id FROM posts where post_id=?"
+    post = select_one(sql_query, (post_id,))
+    if post is None:
+        return []
+    post_username = users_get_username(post[4])
+    full_post = [post[0], post[1], post[2], post[3], post_username, post[5], post_username == username, []]
+    comments = comments_from_post(post_id)
+    for comment in comments:
+        comment.append(comment[1] == username)
+
+    full_post[7] = comments
+    return full_post
+
+
 
 
 
