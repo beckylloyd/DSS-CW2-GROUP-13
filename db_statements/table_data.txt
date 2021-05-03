@@ -18,3 +18,8 @@ INSERT INTO posts(post_id, title, body, date, time, tag_id, user_id) VALUES (1, 
 INSERT INTO posts(post_id, title, body, date, time, tag_id, user_id) VALUES (2, 'Lego issue', 'I cant build my lego ninjago set, pls send help.', '29/03/2021', '13:30', 2, 2);
 INSERT INTO posts(post_id, title, body, date, time, tag_id, user_id) VALUES (3, 'Question about duplo', 'What ages is lego duplo for?', '27/03/2021', '18:25', 3, 3);
 
+
+INSERT INTO comments(comment_id, comment, date, time, post_id, user_id) VALUES (1, 'Yeah I totally agree!! ', '01/05/2021', '14:25', 1, 3);
+INSERT INTO comments(comment_id, comment, date, time, post_id, user_id) VALUES (2, 'lol ur stupid', '01/05/2021', '12:00', 2, 1);
+INSERT INTO comments(comment_id, comment, date, time, post_id, user_id) VALUES (3, 'its for lil kids ', '01/05/2021', '10:45', 3, 5);
+
