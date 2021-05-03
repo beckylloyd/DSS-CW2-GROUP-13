@@ -13,7 +13,7 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
-
+import os
 import Utilities
 DATABASE = r"sqlite.db"
 
@@ -273,12 +273,16 @@ def users_get_all():
 
 # insert a user into the db (email, username, password)
 def users_insert(user):
-    sql_query = "INSERT INTO users(user_id, email, username, password, added) VALUES(?, ?, ?, ?, ?);"
+    sql_query = "INSERT INTO users(user_id, email, username, password, added, seasoning) VALUES(?, ?, ?, ?, ?, ?);"
     all_users = users_get_all()
     id = all_users[len(all_users) -1][0] + 1
     added = datetime.now()
-    hashed = Utilities.hash(user[2], added)
-    insert_user = (id, user[0], user[1], hashed, added.strftime("%d/%m/%Y %H:%M:%S:%f"))
+    salt = str(os.urandom(16))
+    readFile= Utilities.readFile("pepper.txt")
+    pepper = Utilities.decrypt(readFile[0], datetime.strptime(readFile[1], "%d/%m/%Y %H:%M:%S:%f"))
+    hashed = Utilities.hash(pepper+user[2]+salt, added)
+
+    insert_user = (id, user[0], user[1], hashed, added.strftime("%d/%m/%Y %H:%M:%S:%f"), salt)
     return insert(sql_query, insert_user)
 
 # update the bio of a user given the username
@@ -295,6 +299,14 @@ def users_update_image(username, image):
     parameters = (image, user_id)
     return update(sql_query, parameters)
 
+# get the salt associated with a user
+def users_get_salt(email):
+    sql_query = "SELECT * FROM users WHERE email=?"
+    parameters = (email,)
+    row = select_one(sql_query, parameters)
+    if (row is not None):
+        return row[7]
+    return None
 
 
 
@@ -470,10 +482,14 @@ def login(email, password):
     if added is None:
         added = datetime.now()
     else:
-        added = datetime.strptime(users_get_added(email), "%d/%m/%Y %H:%M:%S:%f")
-    hash_input = Utilities.hash(password, added)
-    if (hash_input == hash_pword):
-        pass_ok = True
+        added = datetime.strptime(added, "%d/%m/%Y %H:%M:%S:%f")
+    salt = users_get_salt(email)
+    if salt is None:
+        salt = ""
+    readFile = Utilities.readFile("pepper.txt")
+    pepper = Utilities.decrypt(readFile[0], datetime.strptime(readFile[1], "%d/%m/%Y %H:%M:%S:%f"))
+    hash_input = Utilities.hash(pepper+password+salt, added)
+    pass_ok = Utilities.compare_hashes(hash_pword, hash_input)
 
     # check if both correct
     # make sure error message is generic
@@ -608,6 +624,15 @@ def search(term):
 
 
 # if __name__ == '__main__':
+#     users_insert(("lottie@email.com", "lottie", "paSsworD!"))
+#     users_insert(("henry@email.com", "henry", "p4ssw0rd?"))
+#     users_insert(("poppy@email.com", "poppy", "pass*W0Rd"))
+#     users_insert(("jasper@email.com", "jasper", "PAssw0RD&"))
+#     users_insert(("minnie@email.com", "minnnie", "PassW25d!"))
+
+
+
+   # print(login("hello@email.com", "Fly4859fdsjd"))
 #     # print(users_get_details("billy"))
 #     # print(posts_from_user("billy"))
 #     # print(comments_from_post(1))

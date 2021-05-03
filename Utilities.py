@@ -124,7 +124,7 @@ def encrypt(text):
 
 """
 decrypt text
-cipher_text: the encryped text
+cipher_text: the encrypted text
 encrypt_time: time the text was encrypted
 
 return: the plain text 
@@ -176,8 +176,22 @@ def writeFile(aList, aFile):
         file.write(each + "\n")
     file.close()
 
-#if __name__ == '__main__':
 
+def compare_hashes(hash_1, hash_2):
+    if(len(hash_1)!= len(hash_2)):
+        return False
+    for i in range(0, len(hash_1)):
+        if(hash_1[i] != hash_2[i]):
+            return False
+    return True
+
+# if __name__ == '__main__':
+#     cipher, added = encrypt("Schaufensterpuppen")
+#     writeFile([cipher, added.strftime("%d/%m/%Y %H:%M:%S:%f")], "pepper.txt")
+
+#     hash_1 = str(123)
+#     hash_2 = str(123456789)
+#     print(compare_hashes(hash_1, hash_2))
 #     text = input("enter some text to encrypt and decrypt: ")
 #     cipher, encrypt_time = encrypt(text)
 #     print(cipher)
