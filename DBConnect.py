@@ -378,7 +378,7 @@ def posts_insert(post, user_id):
 
     inserted = insert(sql_query, insert_post)
     if(inserted):
-        return inserted, "New post made :)"
+        return inserted, "New post made :)", post_id
     else:
         return inserted, "Sorry we can't post this right now, try again later"
 
@@ -433,9 +433,11 @@ def comments_from_post(post_id):
 
 # add a comment (comment, post_id, user_id) into the db
 def comments_insert(comment):
+    # check when the last comment was inserted by this user
+
     sql_query = "INSERT INTO comments(comment_id, comment, date, time, post_id, user_id) VALUES (?, ?, ?, ?, ?, ?);"
     all_comments= select_all("SELECT * FROM comments;", ())
-    comment_id = all_comments[len(all_comments)-1][0] + 1
+    comment_id = all_comments[len(all_comments) - 1][0] + 1
 
     # parse comment text before adding
     body = Utilities.parse(comment[0])[1]
@@ -445,7 +447,20 @@ def comments_insert(comment):
     user = users_get_username(comment[2])
     if (user is None) or (post is None):
         # either is not valid, don't insert
-        return False, "Oh no! Looks like we cant post your comment at this time, try again later!"
+        return False
+    # get them in date order
+    all_comments = select_all("SELECT * FROM comments where user_id=?;", (user))
+    all_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[2] + " " + x[3], "%d/%m/%Y %H:%M"))
+    # get the last posts date and time
+    last_date = datetime.strptime(all_comments[0][2], "%d/%m/%Y")
+    last_time = datetime.strptime(all_comments[0][3], "%H:%M")
+    # check if last post on same day
+    if (last_date.date() == datetime.now().date()):
+        # check time since last post
+        time_diff = (datetime.now() - last_time).seconds / 60
+        if (time_diff < 2):
+            # last post less than 5 mins ago, dont post
+            return False
 
     # get current date and time
     date = datetime.now().strftime("%d/%m/%Y")
@@ -478,6 +493,8 @@ def login(email, password):
 
     # search for password (even if username incorrect)
     hash_pword = users_get_password(email)
+    if hash_pword is None:
+        hash_pword = ""
     added = users_get_added(email)
     if added is None:
         added = datetime.now()
@@ -516,12 +533,12 @@ def signUp(email, username, password):
         accepted, username = Utilities.parse(username)
         if not accepted:
             flash_message = True
-            message = "Please enter a valid username"
+            message = "Please enter a valid username!"
         # search for username on DB
         result = users_get_email(username)
         if result is not None:
             flash_message = True
-            message = "That username is already taken"
+            message = "That username is already taken!"
 
 
     if(flash_message):
@@ -587,7 +604,6 @@ def sendEmail(address, content):
         server.login("group08.studyplanner@gmail.com", password)
         server.send_message(email)
         server.close()
-        print("sent!")
     except smtplib.SMTPException as e:
         print("ERROR: ")
         print(e)
@@ -620,25 +636,4 @@ def search(term):
             conn.close()
 
     return term, rows
-
-
-
-# if __name__ == '__main__':
-#     users_insert(("lottie@email.com", "lottie", "paSsworD!"))
-#     users_insert(("henry@email.com", "henry", "p4ssw0rd?"))
-#     users_insert(("poppy@email.com", "poppy", "pass*W0Rd"))
-#     users_insert(("jasper@email.com", "jasper", "PAssw0RD&"))
-#     users_insert(("minnie@email.com", "minnnie", "PassW25d!"))
-
-
-
-   # print(login("hello@email.com", "Fly4859fdsjd"))
-#     # print(users_get_details("billy"))
-#     # print(posts_from_user("billy"))
-#     # print(comments_from_post(1))
-#     # print(users_update_bio("billy", "I love lego so much!!"))
-#     # print(users_update_image("billy", "LEGO_PIRATE"))
-#     #print(posts_delete(13))
-#     #print(comments_insert(("comment", 7, 2)))
-#     #print(comments_delete(5))
 

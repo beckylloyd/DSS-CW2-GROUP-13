@@ -185,32 +185,7 @@ def compare_hashes(hash_1, hash_2):
             return False
     return True
 
-# if __name__ == '__main__':
-#     cipher, added = encrypt("Schaufensterpuppen")
-#     writeFile([cipher, added.strftime("%d/%m/%Y %H:%M:%S:%f")], "pepper.txt")
 
-#     hash_1 = str(123)
-#     hash_2 = str(123456789)
-#     print(compare_hashes(hash_1, hash_2))
-#     text = input("enter some text to encrypt and decrypt: ")
-#     cipher, encrypt_time = encrypt(text)
-#     print(cipher)
-#     plain = decrypt(cipher, encrypt_time)
-#     print(plain)
-#     print(plain == text)
-#
-#     text = input("enter some text to hash: ")
-#     hash_time = datetime.now()
-#     hash1 = hash(text, hash_time)
-#     time.sleep(60)
-#     hash2 = hash(text, hash_time)
-#     print(hash1 == hash2)
-#     text = "<script>document.alert(\"haha\");</script>;"
-#     encoded = encode(text)
-#     print("encoded: " , encoded)
-#     decoded = unencode(encoded)
-#     print("decoded: ",decoded )
-#     print(text == decoded)
 
 
 
