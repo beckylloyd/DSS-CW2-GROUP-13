@@ -14,16 +14,16 @@
         }
 
 
-a {
-    color: #000000;
-    text-decoration: none;
-}
+        .clickable {
+            color: #000000;
+            text-decoration: none;
+        }
 
-a:hover {
-    color:#00A0C6;
-    text-decoration:none;
-    cursor:pointer;
-}
+        .clickable:hover {
+            color: #00A0C6;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
     <link rel="icon" href="/static/favicon.ico">
     <title>Brickin' it</title>
@@ -44,7 +44,11 @@ a:hover {
 </div>
 
 <nav class="navbar shadow sticky-top navbar-dark navbar-expand-lg" style="background-color: #FFE330">
-    <a class="navbar-brand " href="/" style="color: black">Brickin' It</a>
+    <form method="get" action="/">
+        <button type="submit" class="navbar-brand clickable "
+                style="border: none; outline: none; background: transparent; color: black">Brickin' It
+        </button>
+    </form>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse"
             aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation"
             style="background-color: #FFE330">
@@ -58,11 +62,25 @@ a:hover {
 
 
             <div class="col-4 d-flex justify-content-left align-items-center">
-                <a style="color: black" class="nav-link p-2" href="/home">Home</a>
+                <form method="get" action="/home">
+                    <button type="submit" class="navbar-brand clickable "
+                            style="border: none; outline: none; background: transparent; color: black"
+                            class="nav-link p-2">Home
+                    </button>
+                </form>
                 {% if loggedIn %}
-                <a style="color: black" class="nav-link p-2" href="/newPost">New Post</a>
-
-                <a style="color: black" class="nav-link p-2" href="/profile">Profile</a>
+                <form method="get" action="/newPost">
+                    <button type="submit" class="navbar-brand  clickable"
+                            style="border: none; outline: none; background: transparent; color: black"
+                            class="nav-link p-2">New Post
+                    </button>
+                </form>
+                <form method="get" action="/profile">
+                    <button type="submit" class="navbar-brand  clickable"
+                            style="border: none; outline: none; background: transparent; color: black"
+                            class="nav-link p-2">Profile
+                    </button>
+                </form>
                 {% endif %}
             </div>
 
@@ -70,22 +88,27 @@ a:hover {
 
                 <form class="form-inline p-2 " action="/search">
                     <input class="form-control shadow-sm  mr-1" type="text" placeholder="Search" name="search_term">
-                    <button class="btn btn-danger  " type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-</svg></button>
+                    <button class="btn btn-danger  " type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                    </button>
                 </form>
                 {% if loggedIn %}
                 <form method="get" action="/userLogOut">
-                <button type="submit" class="btn shadow-sm  btn-dark"
-                   role="button">Log Out</button>
+                    <button type="submit" class="btn shadow-sm  btn-dark"
+                            role="button">Log Out
+                    </button>
                 </form>
 
                 {% else %}
-                 <form method="get" action="/logIn">
-                <button type="submit" class="btn shadow-sm  btn-dark"  role="button">Log In</button>
-                 </form>
+                <form method="get" action="/logIn">
+                    <button type="submit" class="btn shadow-sm  btn-dark" role="button">Log In</button>
+                </form>
                 <form method="get" action="/signUp">
-                <button type="submit"  class="btn shadow-sm btn-dark mx-2" role="button" >Sign up</button></form>
+                    <button type="submit" class="btn shadow-sm btn-dark mx-2" role="button">Sign up</button>
+                </form>
 
                 {% endif %}
             </div>
