@@ -446,7 +446,7 @@ def comments_from_post(post_id):
             username = users_get_username(comment[5])
             user = users_get_details(username)
             full_comments.append([user[1], username, comment[1], comment[2], comment[3], comment[0]])
-    full_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
+    full_comments.sort(reverse=False, key=lambda x: datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
     return full_comments
 
 # add a comment (comment, post_id, user_id) into the db

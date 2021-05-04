@@ -231,8 +231,8 @@ def validateCaptcha():
     global captchaCoords
 
     imageNumber = int(request.form['imageNumber'])
-    x = int(request.form['x'])
-    y = int(request.form['y'])
+    x = float(request.form['x'])
+    y = float(request.form['y'])
     xCorrect = False
     yCorrect = False
 
@@ -516,8 +516,13 @@ def commentsBox():
 @std_context
 def deleteComment():
     context = request.context
+
     try:
-        last_url = session['urls'][len(session['urls']) - 2]
+        urlToGet = 2
+        last_url = session['urls'][len(session['urls']) - urlToGet]
+        while "static" in last_url:
+            urlToGet += 1
+            last_url = session['urls'][len(session['urls']) - urlToGet]
     except:
         last_url = None
 
