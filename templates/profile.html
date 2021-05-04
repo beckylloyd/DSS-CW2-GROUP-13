@@ -1,105 +1,127 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container-fluid">
+    <div class="row">
 
-<div class="row">
+        <div class="col-md-4 p-2 d-flex justify-content-center">
+            <div class="sticky-top" style="top: 90px">
+                <div class="jumbotron shadow sticky-top" style="top: 90px; min-width: 320px; max-width: 320px">
+                    <img src="/static/user_images/{{image}}.png" alt="User Profile Image"
+                         class="rounded-circle mx-auto d-block"
+                         style="max-width: 50%">
+                    <br>
 
-    <div class="col-md-4 p-2 d-flex justify-content-center">
-        <div class="sticky-top" style="top: 70px">
-            <div class="jumbotron" style="min-width: auto; max-width: 320px">
-                <img src="/static/user_images/{{image}}.png" alt="User Profile Image" class="rounded-circle mx-auto d-block"
-                     style="max-width: 50%">
-                <br>
+                    <h1 class="text-center">{{username}} </h1>
+                    <hr class="my-4">
+                    <p class="text-center">{{bio}}</p>
+                    {% if myProfile %}
 
-                                           <h1 class="text-center">{{username}} </h1>
-                <hr class="my-4">
-                <p class="text-center">{{bio}}</p>
+                    <div class="container">
+                        <div class="row justify-content-center">
+
+                            <button type="button" class="btn btn-warning shadow-sm my-auto mx-auto" data-toggle="modal"
+                                    data-target="#imageModal">
+                                Change picture
+                            </button>
+                        </div><div class="row mt-1 justify-content-center">
+                            <button type="button" class="btn btn-warning shadow-sm  my-auto mx-auto" data-toggle="modal"
+                                    data-target="#bioModal">
+                                Edit bio
+                            </button>
+                        </div>
+                    </div>
+
+                {% endif %}
+                </div>
+
             </div>
         </div>
-    </div>
 
 
-    <!-- Left column with posts-->
-    <div class="col-md-8  p-2">
-        {% if list %}
-        <!-- Box for each post -->
-        {%for item in list%}
-        <div class="jumbotron pt-2">
-            <div class="container-fluid pt-3 pb-2 ">
-                <div id="PostTitle" class="row">
-                    <a href="/specificPost/{{item[5]}}"> <h2 >{{item[0]}}</h2></a>
-                    <span class="font-weight-light pl-3 pt-2 justify-content-end">
+        <!-- Left column with posts-->
+        <div class="col-md-8 p-2">
+            {% if list %}
+            <!-- Box for each post -->
+            {%for item in list%}
+            <div class="jumbotron shadow pt-2">
+                <div class="container-fluid pt-3 pb-2 ">
+                    <div id="PostTitle" class="row">
+                        <a href="/specificPost/{{item[5]}}"><h2>{{item[0]}}</h2></a>
+                        <span class="font-weight-light pl-3 pt-2 justify-content-end">
                                         <small> {{item[1]}}
                                             <span class="font-italic">
                                                 {{item[2]}}
                                             </span>
                                         </small>
                                     </span>
-                    <span class="font-weight-light pl-3 pt-2 justify-content-end">
+                        <span class="font-weight-light pl-3 pt-2 justify-content-end">
                                         <small>
                                             <span class="font-weight-bold">
-                                                <a class="font-weight-bold"  href="/otherProfile/{{item[4]}}">{{item[4]}}</a>
+                                                <a class="font-weight-bold"
+                                                   href="/otherProfile/{{item[4]}}">{{item[4]}}</a>
                                             </span>
                                         </small>
                                     </span>
-                </div>
+                    </div>
 
-                <div id="PostMain" class="row rounded border border-white p-3 bg-light">
-                    {{item[3]}}
-                </div>
+                    <div id="PostMain" class="row rounded border border-white p-3 bg-light">
+                        {{item[3]}}
+                    </div>
 
-                <!-- Box for each comment - TO DO need to make into list -->
-                <span id="CommentsHeader" class="row mt-2 ml-3 ">
+                    <!-- Box for each comment - TO DO need to make into list -->
+                    <span id="CommentsHeader" class="row mt-2 ml-3 ">
                     <h5>Comments</h5>
                 </span>
 
 
-                <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
-                {%for comment in item[7]%}
-                <div id="Comments" class="row">
-                    <div id="CommentContainer" class="container-fluid p-2">
-                        <div class="row">
-                            <div class="col-2 align-self-center">
+                    <!-- NEEDS FOR LOOP LIKE ABOVE FOR EACH COMMENT -->
+                    {%for comment in item[7]%}
+                    <div id="Comments" class="row">
+                        <div id="CommentContainer" class="container-fluid p-2">
+                            <div class="row">
+                                <div class="col-2 align-self-center">
 
-                                <div id="CommenterImg" class="col-12">
-                                    <div class="row d-flex justify-content-center">
-                                        <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
-                                             class="rounded-circle"
-                                             style="max-width: 35px">
+                                    <div id="CommenterImg" class="col-12">
+                                        <div class="row d-flex justify-content-center">
+                                            <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
+                                                 class="rounded-circle"
+                                                 style="max-width: 35px">
+                                        </div>
+                                        <div class="row d-flex justify-content-center">
+                                            <a class="font-weight-bold" href="/otherProfile/{{comment[1]}}">
+                                                {{comment[1]}} </a>
+                                        </div>
+                                        {% if comment[6] %}
+                                        <div class="row d-flex justify-content-center">
+                                            <form method="post" action="deleteComment">
+                                                <input type="submit" class="btn btn-danger p-1 mr-2"
+                                                       aria-label="Delete comment" value="{{comment[5]}}"
+                                                       name="delComment">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                     fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                    <path fill-rule="evenodd"
+                                                          d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                                </svg>
+                                                </input>
+                                            </form>
+                                        </div>
+                                        {% endif %}
                                     </div>
-                                    <div class="row d-flex justify-content-center">
-                                        <a class="font-weight-bold"  href="/otherProfile/{{comment[1]}}">
-                                            {{comment[1]}} </a>
-                                    </div>
-                                    {% if comment[6] %}
-                                    <div class="row d-flex justify-content-center">
-                                        <form method="post" action="deleteComment">
-                                        <input type="submit" class="btn btn-danger p-1 mr-2"
-                                                aria-label="Delete comment" value="{{comment[5]}}" name="delComment">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                 fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                                                <path fill-rule="evenodd"
-                                                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                                            </svg>
-                                        </input>
-                                        </form>
-                                    </div>
-                                    {% endif %}
+
                                 </div>
-
-                            </div>
-                            <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
-                                <div class="row">
-                                    <div id="Comment" class="col-12"><span class="text-left">
+                                <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
+                                    <div class="row">
+                                        <div id="Comment" class="col-12"><span class="text-left">
                                         {{comment[2]}}</span>
+                                        </div>
+
                                     </div>
+                                    <div class="row">
 
-                                </div>
-                                <div class="row">
-
-                                    <div class="col-12">
-                                        <div class="row mx-auto justify-content-end ">
+                                        <div class="col-12">
+                                            <div class="row mx-auto justify-content-end ">
                                      <span class="font-weight-light ">
                                         <small> {{comment[3]}}
                                             <span class="font-italic align-bottom">
@@ -107,61 +129,231 @@
                                             </span>
                                         </small>
                                     </span>
+                                            </div>
                                         </div>
+
                                     </div>
 
+
                                 </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    {% endfor %}
 
 
+                    <!-- Add comments box if logged in -->
+                    <form class="mt-2" action="commentsBox" method="post">
+                        <div class="form-row mb-2 mt-2">
+                            {% if loggedIn %}
+                            <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts.."
+                                   name="comment">
+                            {% else %}
+                            <input type="text" class="form-control" placeholder="Please log in to add a comment."
+                                   disabled>
+                            {% endif %}
+                        </div>
+                        <div class="form-row justify-content-end">
+
+                            <div class="row ">
+                                <!-- Delete button if user who posted the post was who is logged in-->
+                                {% if item[6] %}
+                                <button type="submit" class="btn btn-danger p-1 mr-2" value="{{item[5]}}"
+                                        onclick="window.history.back()" name="delete">Delete Post
+                                </button>
+                                {% endif %}
+                                {% if loggedIn %}
+                                <button type="submit" class="btn btn-primary p-1" value="{{item[5]}}"
+                                        onclick="window.history.back()" name="add">Add Comment
+                                </button>
+                                {% endif %}
                             </div>
                         </div>
-
-                    </div>
-
+                    </form>
                 </div>
-                {% endfor %}
-
-
-                <!-- Add comments box if logged in -->
-                <form class="mt-2" action="commentsBox" method="post">
-                    <div class="form-row mb-2 mt-2">
-                        {% if loggedIn %}
-                        <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts.." name="comment">
-                        {% else %}
-                        <input type="text" class="form-control" placeholder="Please log in to add a comment." disabled>
-                        {% endif %}
-                    </div>
-                    <div class="form-row justify-content-end">
-
-                        <div class="row ">
-                            <!-- Delete button if user who posted the post was who is logged in-->
-                            {% if item[6] %}
-                            <button type="submit" class="btn btn-danger p-1 mr-2" value="{{item[5]}}" onclick="window.history.back()" name="delete">Delete Post</button>
-                            {% endif %}
-                            {% if loggedIn %}
-                            <button type="submit" class="btn btn-primary p-1" value="{{item[5]}}" onclick="window.history.back()" name="add">Add Comment</button>
-                            {% endif %}
-                        </div>
-                    </div>
-                </form>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-{% else %}
+        {% else %}
 
-    <div class="jumbotron ">
+        <div class="jumbotron ">
         <span class="d-flex justify-content-center">
             It seems {{username}} has not created any posts yet!
         </span>
 
-            </div>
-          {% endif %}
+        </div>
+        {% endif %}
 
+    </div>
+
+
+    <!-- Profile section-->
+
+    <!-- Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalTitle">Click an image below to change your profile
+                        picture</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="min-width: fit-content">
+                    <div class="container-fluid">
+                        <div class="row p-0 m-0">
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/user" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/user.png" alt="user"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_BATMAN" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_BATMAN.png" alt="Batman"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_GIRL_HEAD" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_GIRL_HEAD.png" alt="Girl Head"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_NURSE" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_NURSE.png" alt="Nurse"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="row p-0 m-0">
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_PIRATE" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_PIRATE.png" alt="Pirate"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_PUNK_HEAD" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_PUNK_HEAD.png" alt="Punk"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_QUEEN" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_QUEEN.png" alt="Queen"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_ROBOTHEAD" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_ROBOTHEAD.png" alt="Robot"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="row p-0 m-0">
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_SPACEHEAD" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_SPACEHEAD.png" alt="Space person"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_SPIDEY_HEAD" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_SPIDEY_HEAD.png" alt="Spiderman"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_SUPER_HEAD" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_SUPER_HEAD.png" alt="Superman"
+                                             class="rounded" style="max-width: 100%"
+                                        ></button>
+                                </form>
+                            </div>
+                            <div class="col m-1 p-1">
+                                <form action="/changeImage/LEGO_WILDSTYLE" method="post">
+                                    <button class="p-0 m-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        <img src="/static/user_images/LEGO_WILDSTYLE.png" alt="Wildstyle"
+                                             class="rounded" style="max-width: 100%">
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 
-<!-- Profile section-->
+<!-- Modal -->
+<div class="modal fade" id="bioModal" tabindex="-1" role="dialog" aria-labelledby="bioModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bioModalLabel">Update your bio</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="bioForm" action="/updateBio" method="post">
+                    <div class="form-group">
+                        <label class="col-form-label">Bio:</label>
+                        <input name="bio" type="text" class="form-control" id="recipient-name" value="{{bio}}">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <input type="submit" class="btn btn-primary" form="bioForm" value="Save changes"></input>
 
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

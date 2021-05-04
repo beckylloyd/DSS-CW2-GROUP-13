@@ -383,7 +383,7 @@ def posts_get_single(post_id, username):
     if post is None:
         return []
     post_username = users_get_username(post[4])
-    full_post = [post[0], post[1], post[2], post[3], post_username, post[5], post_username == username, []]
+    full_post = [Utilities.unencode(post[0]), post[1], post[2], Utilities.unencode(post[3]), post_username, post[5], post_username == username, []]
     comments = comments_from_post(post_id)
     for comment in comments:
         comment.append(comment[1] == username)

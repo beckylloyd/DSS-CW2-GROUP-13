@@ -6,6 +6,19 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="/static/css/style.css" rel="stylesheet" media="all">
+    <style>
+
+a {
+    color: #000000;
+    text-decoration: none;
+}
+
+a:hover {
+    color:#00A0C6;
+    text-decoration:none;
+    cursor:pointer;
+}
+    </style>
     <link rel="icon" href="/static/favicon.ico">
     <title>Brickin' it</title>
 </head>
@@ -70,7 +83,7 @@
     </div>
 </nav>
 
-<div class="container-fluid">
+<div class="container-fluid m-2">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
 
@@ -111,13 +124,10 @@
         </div>
     </div>
 </div>
-
-<br>
-<br>
 <br>
 
 
-<div class="container-fluid bg-light">
+<div class="container-fluid bg-light d-flex justify-content-center">
     {% block content %}{% endblock %}
 </div>
 
@@ -133,5 +143,6 @@
 
 <script src="/static/js/auto-log-out.js"></script>
 <script src="/static/js/captcha.js"></script>
+<script src="/static/js/changeImage.js.js"></script>
 </body>
 </html>
