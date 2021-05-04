@@ -7,11 +7,12 @@
     <div class="col-md-4 p-2 d-flex justify-content-center">
         <div class="sticky-top" style="top: 70px">
             <div class="jumbotron" style="min-width: auto; max-width: 320px">
-                <img src="/static/user_images/{{image}}.png" alt="User Profile Image" class="rounded-circle mx-auto d-block"
+                <img src="/static/user_images/{{image}}.png" alt="User Profile Image"
+                     class="rounded-circle mx-auto d-block"
                      style="max-width: 50%">
                 <br>
 
-                                           <h1 class="text-center">{{username}} </h1>
+                <h1 class="text-center">{{username}} </h1>
                 <hr class="my-4">
                 <p class="text-center">{{bio}}</p>
             </div>
@@ -38,7 +39,8 @@
                     <span class="font-weight-light pl-3 pt-2 justify-content-end">
                                         <small>
                                             <span class="font-weight-bold">
-                                                <a class="font-weight-bold"  href="/otherProfile/{{item[4]}}">{{item[4]}}</a>
+                                                <a class="font-weight-bold"
+                                                   href="/otherProfile/{{item[4]}}">{{item[4]}}</a>
                                             </span>
                                         </small>
                                     </span>
@@ -61,31 +63,16 @@
                         <div class="row">
                             <div class="col-2 align-self-center">
 
-                                <div id="CommenterImg" class="col-12">
+                                <div id="CommenterImg" class="col">
                                     <div class="row d-flex justify-content-center">
                                         <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
                                              class="rounded-circle"
                                              style="max-width: 35px">
                                     </div>
                                     <div class="row d-flex justify-content-center">
-                                        <a class="font-weight-bold"  href="/otherProfile/{{comment[1]}}">
+                                        <a class="font-weight-bold" href="/otherProfile/{{comment[1]}}">
                                             {{comment[1]}} </a>
                                     </div>
-                                    {% if comment[6] %}
-                                    <div class="row d-flex justify-content-center">
-                                        <form method="post" action="deleteComment">
-                                        <input type="submit" class="btn btn-danger p-1 mr-2"
-                                                aria-label="Delete comment" value="{{comment[5]}}" name="delComment">
-<!--                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"-->
-<!--                                                 fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">-->
-<!--                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>-->
-<!--                                                <path fill-rule="evenodd"-->
-<!--                                                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>-->
-<!--                                            </svg>-->
-                                        </input>
-                                        </form>
-                                    </div>
-                                    {% endif %}
                                 </div>
 
                             </div>
@@ -97,7 +84,28 @@
 
                                 </div>
                                 <div class="row">
+                                    {% if comment[6]%}
+                                    <div class="col-12">
+                                        <div class="row mx-auto justify-content-end ">
 
+                                            <form action="deleteComment" method="post">
+                                            <input type="hidden" value="{{comment[5]}}" name="hidden">
+                                            <small><button type="submit" class="btn text-danger p-sm-0 mr-2"
+                                                    onclick="window.history.back()">delete
+                                            </button></small>
+                                                <br>
+                                        </form>
+                                            <span class="font-weight-light ">
+
+                                                <small> {{comment[3]}}
+                                                    <span class="font-italic ">
+                                                        {{comment[4]}}
+                                                    </span>
+                                                </small>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {%else%}
                                     <div class="col-12">
                                         <div class="row mx-auto justify-content-end ">
                                      <span class="font-weight-light ">
@@ -109,6 +117,7 @@
                                     </span>
                                         </div>
                                     </div>
+                                    {%endif%}
 
                                 </div>
 
@@ -126,9 +135,11 @@
                 <form class="mt-2" action="commentsBox" method="post">
                     <div class="form-row mb-2 mt-2">
                         {% if loggedIn %}
-                        <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts.." name="comment">
+                        <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts.."
+                               name="comment">
                         {% else %}
-                        <input type="text" class="form-control" placeholder="Please log in to add a comment." disabled>
+                        <input type="text" class="form-control" placeholder="Please log in to add a comment."
+                               disabled>
                         {% endif %}
                     </div>
                     <div class="form-row justify-content-end">
@@ -136,10 +147,14 @@
                         <div class="row ">
                             <!-- Delete button if user who posted the post was who is logged in-->
                             {% if item[6] %}
-                            <button type="submit" class="btn btn-danger p-1 mr-2" value="{{item[5]}}" name="delete">Delete Post</button>
+                            <button type="submit" class="btn btn-danger p-1 mr-2" value="{{item[5]}}" name="delete"
+                                    onclick="window.history.back()">Delete Post
+                            </button>
                             {% endif %}
                             {% if loggedIn %}
-                            <button type="submit" class="btn btn-primary p-1" value="{{item[5]}}" name="add">Add Comment</button>
+                            <button type="submit" class="btn btn-primary p-1" value="{{item[5]}}" name="add"
+                                    onclick="window.history.back()">Add Comment
+                            </button>
                             {% endif %}
                         </div>
                     </div>

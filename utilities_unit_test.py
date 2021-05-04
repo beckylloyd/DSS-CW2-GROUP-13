@@ -59,6 +59,28 @@ class MyTestCase(unittest.TestCase):
             hash3 = util.hash(text, datetime.now())
             self.assertNotEqual(hash1, hash3)
 
+    def test_hash_equals(self):
+        text1 = "here is a very long text for you to hash"
+        text2 = "here is a long text that is not the same"
+        hash_time = datetime.now()
+        hash_1 = util.hash(text1, hash_time)
+        hash_2 = util.hash(text2, hash_time)
+        self.assertFalse(util.compare_hashes(hash_1, hash_2))
+        self.assertTrue(util.compare_hashes(hash_1, hash_1))
+        time.sleep(5)
+        hash_time = datetime.now()
+        hash_3 = util.hash(text1, hash_time)
+        self.assertFalse(util.compare_hashes(hash_1, hash_3))
+
+    def test_unencode(self):
+        text = [ "here is some snazzy! text :o it has more stuff in it? :D", "<script>document.alert(\"haha\");</script>;", "' union all select password from users;--"]
+        for each in text:
+            encoded = util.encode(each)
+            decoded = util.unencode(encoded)
+            self.assertEqual(decoded, each)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -124,7 +124,7 @@ def encrypt(text):
 
 """
 decrypt text
-cipher_text: the encryped text
+cipher_text: the encrypted text
 encrypt_time: time the text was encrypted
 
 return: the plain text 
@@ -176,27 +176,16 @@ def writeFile(aList, aFile):
         file.write(each + "\n")
     file.close()
 
-#if __name__ == '__main__':
 
-#     text = input("enter some text to encrypt and decrypt: ")
-#     cipher, encrypt_time = encrypt(text)
-#     print(cipher)
-#     plain = decrypt(cipher, encrypt_time)
-#     print(plain)
-#     print(plain == text)
-#
-#     text = input("enter some text to hash: ")
-#     hash_time = datetime.now()
-#     hash1 = hash(text, hash_time)
-#     time.sleep(60)
-#     hash2 = hash(text, hash_time)
-#     print(hash1 == hash2)
-#     text = "<script>document.alert(\"haha\");</script>;"
-#     encoded = encode(text)
-#     print("encoded: " , encoded)
-#     decoded = unencode(encoded)
-#     print("decoded: ",decoded )
-#     print(text == decoded)
+def compare_hashes(hash_1, hash_2):
+    if(len(hash_1)!= len(hash_2)):
+        return False
+    for i in range(0, len(hash_1)):
+        if(hash_1[i] != hash_2[i]):
+            return False
+    return True
+
+
 
 
 

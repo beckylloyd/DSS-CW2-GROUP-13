@@ -27,3 +27,8 @@
 .text-responsive {
   font-size: calc(100% + 1vw + 1vh);
 }
+
+.trash_align{
+  align-content: start;
+  margin-right:-10;
+}

@@ -284,17 +284,19 @@ def makeNewPost():
     body = request.form['body']
     tag = request.form['tag']
 
-    # check the user is logged in
-    if (session['userid'] is not None):
-        # check all inputs are filled
-        # TODO disable submit button instead, and highlight the box to be filled
-        if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
-            context['msg1'] = "Please make sure all boxes are filled :)"
-        else:
-            res = DBConnect.posts_insert((title, body, tag), session['userid'])
-            context['msg1'] = res[1]
+
+    # check all inputs are filled
+    if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
+        flash( "Please make sure all boxes are filled :)", "warning")
     else:
-        context['msg1'] = "Sorry, you need to be logged in to post :'("
+        res = DBConnect.posts_insert((title, body, tag), session['userid'])
+        if(res[0]):
+            flash(res[1], "info")
+            return redirect("/specificPost/"+str(res[2]))
+        else:
+            flash(res[1], "danger")
+
+
 
     # get tags to make sure the select box is populated
     context['tag_values'] = DBConnect.tags_get_all_names()
@@ -417,11 +419,13 @@ def commentsBox():
         post_id = request.form['add']
         add = True
         comment = request.form['comment']
+
         added = DBConnect.comments_insert((comment, post_id, context['userid']))
+
         if added:
-            flash("Comment added succesfully!", "info")
+            flash("Comment added sucessfully!", "info")
         else:
-            flash("Sorry, that comment couldn't be posted at this time, try again later", "danger")
+            flash("Uh oh! Looks like we can't add your comment right now, try again later!", "danger")
     except:
         add = False
 
@@ -452,7 +456,7 @@ def deleteComment():
     except:
         last_url = None
 
-    value = request.form['delComment']
+    value = request.form['hidden']
     try:
         DBConnect.comments_delete(value)
         flash("Comment deleted sucessfully!", "info")
