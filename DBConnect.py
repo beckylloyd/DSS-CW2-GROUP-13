@@ -287,6 +287,7 @@ def users_insert(user):
 
 # update the bio of a user given the username
 def users_update_bio(username, bio):
+    bio = Utilities.parse(bio)[1]
     user_id = users_get_id_u(username)
     sql_query = "UPDATE users SET bio=? WHERE user_id=?"
     parameters = (bio, user_id)
@@ -329,6 +330,7 @@ def posts_from_user(username):
             title = Utilities.unencode(post[0])
             body = Utilities.unencode(post[3])
             all_posts.append([title, post[1], post[2], body, username, post[5]])
+        all_posts.sort(reverse=True, key=lambda x: datetime.strptime(x[1] + " " + x[2], "%d/%m/%Y %H:%M"))
         return all_posts
     return None
 
@@ -384,6 +386,7 @@ def posts_insert(post, user_id):
 
 # delete a post given the id
 def posts_delete(id):
+    comments_delete_post(id)
     sql_query = "DELETE FROM posts WHERE post_id=?"
     return delete(sql_query, (id,))
 
@@ -498,6 +501,10 @@ def comments_delete(id):
     sql_query = "DELETE FROM comments WHERE comment_id=?"
     return delete(sql_query, (id,))
 
+# delete all comments from a specific post
+def comments_delete_post(post_id):
+    sql_query = "DELETE FROM comments WHERE post_id=?"
+    return delete(sql_query, (post_id,))
 
 
 # log user into the application
