@@ -441,6 +441,8 @@ def otherProfile(username):
     # Single array contain [Title, date, time, post text, username, post_id]
     if context['loggedIn']:
         sessionUsername = session['username']
+        if(sessionUsername == username):
+            return redirect("/profile")
     else:
         sessionUsername = ""
     # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
