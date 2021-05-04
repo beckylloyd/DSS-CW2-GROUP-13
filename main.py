@@ -12,7 +12,6 @@ from datetime import timedelta
 
 import DBConnect
 import Utilities
-
 app = Flask(__name__)
 
 # Sets date and time format
@@ -41,7 +40,6 @@ app.secret_key = os.urandom(32)
 # Sets locale to GB for currency
 locale.setlocale(locale.LC_ALL, 'en_GB')
 
-
 @app.before_request
 def make_session_permanent():
     now = datetime.now()
@@ -49,7 +47,7 @@ def make_session_permanent():
         session['urls'].append(request.url)
         try:
             last_active = session['last_active']
-            # print(last_active)
+            #print(last_active)
             delta = now - last_active
             if delta.seconds > 600:
                 session['last_active'] = now
@@ -102,6 +100,7 @@ def writeFile(aList, aFile):
         writer.writerows(aList)
 
 
+
 # Sets default route to homepage
 @app.route('/')
 # Sets route '/home' to homepage
@@ -112,8 +111,6 @@ def index():
     context = request.context
     allPosts = DBConnect.posts_get_all()
     posts = []
-
-
     for post in allPosts:
         username = DBConnect.users_get_username(post[6])
         tag = DBConnect.tags_get_name(post[5])
@@ -163,11 +160,6 @@ def search():
         userImage = DBConnect.users_get_details(username)[1]
         posts.append([post[0], title, body, userImage, username, tag, datetime, comments])
 
-    # for item in results[1]:
-    #     datetime = item[3] + " " + item[4]
-    #     title = Utilities.unencode(item[1])
-    #     body = Utilities.unencode(item[2])
-    #     posts.append([title, body, item[6], item[5], datetime])
     context['search_term'] = results[0]
     context['rows'] = posts
     return render_template('searchResults.html', **context)
@@ -293,7 +285,6 @@ def userSignUp():
 
     return render_template('signUp.html', **context)
 
-
 @app.route('/userLogOut')
 @std_context
 def userLogOut():
@@ -302,7 +293,6 @@ def userLogOut():
     session.pop('bio', None)
     session.pop('image', None)
     return redirect("/logIn")
-
 
 # used in session auto log out modal to update last active in python
 @app.route('/ajaxLogOut', methods=['GET', 'POST'])
@@ -323,7 +313,6 @@ def ajaxLogOut():
 @std_context
 def ajaxExtend():
     return json.dumps({'status': 'OK', 'message': "session extended"});
-
 
 # show new post page
 @app.route('/newPost')
@@ -346,17 +335,19 @@ def makeNewPost():
     body = request.form['body']
     tag = request.form['tag']
 
-    # check the user is logged in
-    if (session['userid'] is not None):
-        # check all inputs are filled
-        # TODO disable submit button instead, and highlight the box to be filled
-        if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
-            context['msg1'] = "Please make sure all boxes are filled :)"
-        else:
-            res = DBConnect.posts_insert((title, body, tag), session['userid'])
-            context['msg1'] = res[1]
+
+    # check all inputs are filled
+    if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
+        flash( "Please make sure all boxes are filled :)", "warning")
     else:
-        context['msg1'] = "Sorry, you need to be logged in to post :'("
+        res = DBConnect.posts_insert((title, body, tag), session['userid'])
+        if(res[0]):
+            flash(res[1], "info")
+            return redirect("/specificPost/"+str(res[2]))
+        else:
+            flash(res[1], "danger")
+
+
 
     # get tags to make sure the select box is populated
     context['tag_values'] = DBConnect.tags_get_all_names()
@@ -467,7 +458,6 @@ def otherProfile(username):
     context['myProfile'] = False
     return render_template('profile.html', **context)
 
-
 @app.route('/commentsBox', methods=['GET', 'POST'])
 @app.route('/otherProfile/commentsBox', methods=['GET', 'POST'])
 @app.route('/specificPost/commentsBox', methods=['GET', 'POST'])
@@ -491,11 +481,13 @@ def commentsBox():
         post_id = request.form['add']
         add = True
         comment = request.form['comment']
+
         added = DBConnect.comments_insert((comment, post_id, context['userid']))
+
         if added:
-            flash("Comment added successfully!", "info")
+            flash("Comment added sucessfully!", "info")
         else:
-            flash("Sorry, that comment couldn't be posted at this time, try again later", "danger")
+            flash("Uh oh! Looks like we can't add your comment right now, try again later!", "danger")
     except:
         add = False
 
@@ -518,7 +510,6 @@ def commentsBox():
         flash("Uh oh! Something has gone wrong :(", "danger")
         return redirect("/")
 
-
 @app.route('/deleteComment', methods=['GET', 'POST'])
 @app.route('/otherProfile/deleteComment', methods=['GET', 'POST'])
 @app.route('/specificPost/deleteComment', methods=['GET', 'POST'])
@@ -530,7 +521,7 @@ def deleteComment():
     except:
         last_url = None
 
-    value = request.form['delComment']
+    value = request.form['hidden']
     try:
         DBConnect.comments_delete(value)
         flash("Comment deleted sucessfully!", "info")
@@ -576,6 +567,7 @@ def updateBio():
 def error_page(error):
     context = request.context
     return render_template('error.html', **context)
+
 
 
 if __name__ == '__main__':

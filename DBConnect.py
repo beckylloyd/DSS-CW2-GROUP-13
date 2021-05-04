@@ -13,7 +13,7 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
-
+import os
 import Utilities
 DATABASE = r"sqlite.db"
 
@@ -273,12 +273,16 @@ def users_get_all():
 
 # insert a user into the db (email, username, password)
 def users_insert(user):
-    sql_query = "INSERT INTO users(user_id, email, username, password, added) VALUES(?, ?, ?, ?, ?);"
+    sql_query = "INSERT INTO users(user_id, email, username, password, added, seasoning) VALUES(?, ?, ?, ?, ?, ?);"
     all_users = users_get_all()
     id = all_users[len(all_users) -1][0] + 1
     added = datetime.now()
-    hashed = Utilities.hash(user[2], added)
-    insert_user = (id, user[0], user[1], hashed, added.strftime("%d/%m/%Y %H:%M:%S:%f"))
+    salt = str(os.urandom(16))
+    readFile= Utilities.readFile("pepper.txt")
+    pepper = Utilities.decrypt(readFile[0], datetime.strptime(readFile[1], "%d/%m/%Y %H:%M:%S:%f"))
+    hashed = Utilities.hash(pepper+user[2]+salt, added)
+
+    insert_user = (id, user[0], user[1], hashed, added.strftime("%d/%m/%Y %H:%M:%S:%f"), salt)
     return insert(sql_query, insert_user)
 
 # update the bio of a user given the username
@@ -295,6 +299,14 @@ def users_update_image(username, image):
     parameters = (image, user_id)
     return update(sql_query, parameters)
 
+# get the salt associated with a user
+def users_get_salt(email):
+    sql_query = "SELECT * FROM users WHERE email=?"
+    parameters = (email,)
+    row = select_one(sql_query, parameters)
+    if (row is not None):
+        return row[7]
+    return None
 
 
 
@@ -366,7 +378,7 @@ def posts_insert(post, user_id):
 
     inserted = insert(sql_query, insert_post)
     if(inserted):
-        return inserted, "New post made :)"
+        return inserted, "New post made :)", post_id
     else:
         return inserted, "Sorry we can't post this right now, try again later"
 
@@ -434,13 +446,34 @@ def comments_from_post(post_id):
             username = users_get_username(comment[5])
             user = users_get_details(username)
             full_comments.append([user[1], username, comment[1], comment[2], comment[3], comment[0]])
+    full_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[3] + " " + x[4], "%d/%m/%Y %H:%M"))
     return full_comments
 
 # add a comment (comment, post_id, user_id) into the db
 def comments_insert(comment):
+    # check when the last comment was inserted by this user
+    # get them in date order
+
+    all_comments = select_all("SELECT * FROM comments where user_id=?;", (str(comment[2])))
+    if all_comments is not None:
+
+        all_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[2] + " " + x[3], "%d/%m/%Y %H:%M"))
+        # get the last posts date and time
+        last_date = datetime.strptime(all_comments[0][2], "%d/%m/%Y")
+        last_time = datetime.strptime(all_comments[0][3], "%H:%M")
+        # check if last post on same day
+        if (last_date.date() == datetime.now().date()):
+            # check time since last post
+            time_diff = (datetime.now() - last_time).seconds / 60
+            if (time_diff < 2):
+                # last post less than 5 mins ago, dont post
+                return False
+
+
     sql_query = "INSERT INTO comments(comment_id, comment, date, time, post_id, user_id) VALUES (?, ?, ?, ?, ?, ?);"
     all_comments= select_all("SELECT * FROM comments;", ())
-    comment_id = all_comments[len(all_comments)-1][0] + 1
+    comment_id = all_comments[len(all_comments) - 1][0] + 1
+
 
     # parse comment text before adding
     body = Utilities.parse(comment[0])[1]
@@ -450,7 +483,8 @@ def comments_insert(comment):
     user = users_get_username(comment[2])
     if (user is None) or (post is None):
         # either is not valid, don't insert
-        return False, "Oh no! Looks like we cant post your comment at this time, try again later!"
+        return False
+
 
     # get current date and time
     date = datetime.now().strftime("%d/%m/%Y")
@@ -483,14 +517,20 @@ def login(email, password):
 
     # search for password (even if username incorrect)
     hash_pword = users_get_password(email)
+    if hash_pword is None:
+        hash_pword = ""
     added = users_get_added(email)
     if added is None:
         added = datetime.now()
     else:
-        added = datetime.strptime(users_get_added(email), "%d/%m/%Y %H:%M:%S:%f")
-    hash_input = Utilities.hash(password, added)
-    if (hash_input == hash_pword):
-        pass_ok = True
+        added = datetime.strptime(added, "%d/%m/%Y %H:%M:%S:%f")
+    salt = users_get_salt(email)
+    if salt is None:
+        salt = ""
+    readFile = Utilities.readFile("pepper.txt")
+    pepper = Utilities.decrypt(readFile[0], datetime.strptime(readFile[1], "%d/%m/%Y %H:%M:%S:%f"))
+    hash_input = Utilities.hash(pepper+password+salt, added)
+    pass_ok = Utilities.compare_hashes(hash_pword, hash_input)
 
     # check if both correct
     # make sure error message is generic
@@ -517,12 +557,12 @@ def signUp(email, username, password):
         accepted, username = Utilities.parse(username)
         if not accepted:
             flash_message = True
-            message = "Please enter a valid username"
+            message = "Please enter a valid username!"
         # search for username on DB
         result = users_get_email(username)
         if result is not None:
             flash_message = True
-            message = "That username is already taken"
+            message = "That username is already taken!"
 
 
     if(flash_message):
@@ -588,7 +628,6 @@ def sendEmail(address, content):
         server.login("group08.studyplanner@gmail.com", password)
         server.send_message(email)
         server.close()
-        print("sent!")
     except smtplib.SMTPException as e:
         print("ERROR: ")
         print(e)
@@ -624,13 +663,6 @@ def search(term):
 
 
 
-# if __name__ == '__main__':
-#     # print(users_get_details("billy"))
-#     # print(posts_from_user("billy"))
-#     # print(comments_from_post(1))
-#     # print(users_update_bio("billy", "I love lego so much!!"))
-#     # print(users_update_image("billy", "LEGO_PIRATE"))
-#     #print(posts_delete(13))
-#     #print(comments_insert(("comment", 7, 2)))
-#     #print(comments_delete(5))
+if __name__ == '__main__':
+    users_insert(("a", "a", "a"))
 
