@@ -667,9 +667,3 @@ def search(term):
             conn.close()
 
     return term, rows
-
-
-
-if __name__ == '__main__':
-    users_insert(("a", "a", "a"))
-
