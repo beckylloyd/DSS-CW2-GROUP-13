@@ -4,7 +4,7 @@
 
 <div class="container m-3">
     <br>
-    <h2 class="display-1 text-center">{% block title %}Welcome to Brickin' it!{% endblock %}</h2>
+        <h1 class="text-center">{% block title %}<span class="fw-light">Welcome to Brickin' it!</span> {% endblock %}</h1>
     <br>
 
 <!--    <div class="jumbotron shadow ">-->
@@ -16,7 +16,7 @@
 
     <br>
     <h3> Popular Posts </h3>
-
+<br>
 
     <!--    # postid, title, body, userimage, username, tag, datetime number of comments -->
 
@@ -27,8 +27,8 @@
                 <div class="col-10">
                     <div class="row align-items-center"><h5><a href="/specificPost/{{row[0]}}">{{row[1]}}</a></h5></div>
                     <hr class="m-0 p-0 align-items-start">
-                    <div class="row align-items-center">{{row[2]}}</div>
-                    <div class="row align-items-center p-1"><small>TAG: {{row[5]}}</small></div>
+                    <div class="row align-items-center p-1">{{row[2]}}</div>
+                    <div class="row align-items-center p-1"><small>Tag: {{row[5]}}</small></div>
                 </div>
                 <div class="col-2">
                     <div class="row justify-content-center align-items-center">

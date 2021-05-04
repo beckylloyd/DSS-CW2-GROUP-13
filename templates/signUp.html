@@ -2,34 +2,38 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="justify-content-around d-flex">
-        <div class="col-6 p-5">
-            <h3>{% block title %}Sign Up{% endblock %}</h3>
-            <br>
-            <form action="userSignUp" method="post">
-                <div class="form-group">
-                    <h6><label for="email">Email: </label></h6>
-                    <input type="text" class="form-control" name='email' id="email"><br>
-                </div>
-                <div class="form-group">
-                    <h6><label for="uname">Username: </label></h6>
-                    <input type="text" class="form-control" name='username' id="uname"><br>
-                </div>
-                <div class="form-group">
-                    <h6><label for="pword">Password: </label></h6>
-                    <input type="password" class="form-control" name='password' id="pword"><br>
-                    <p>Passwords must:</p>
+    <div class="jumbotron  ">
+        <div class="row justify-content-center d-flex">
+            <div class="col-lg-6 p-5">
+                <h3>{% block title %}Sign Up{% endblock %}</h3>
+                <br>
+                <form action="userSignUp" method="post">
+                    <div class="form-group">
+                        <h6><label for="email">Email: </label></h6>
+                        <input type="text" class="form-control" name='email' id="email" required><br>
+                    </div>
+                    <div class="form-group">
+                        <h6><label for="uname">Username: </label></h6>
+                        <input type="text" class="form-control" name='username' id="uname" required><br>
+                    </div>
+                    <div class="form-group">
+                        <h6><label for="pword">Password: </label></h6>
+                        <input type="password" class="form-control" name='password' id="pword" required><br>
+
+                    </div>  <div class="col align-items-center ">
+                <p>Passwords must:</p>
                     <ul>
                         <li>be between 8 and 128 characters long</li>
-                        <li>contain at least 3 of the following 4: lowecase letter, uppercase letter, number, symbol</li>
+                        <li>contain at least 3 of the following 4: lowercase letter, uppercase letter, number, symbol</li>
                         <li>have no more than 2 of the same character in a row</li>
-                    </ul>
-                </div>
-                <input type="submit" value="Sign Up">
-            </form>
-            <br>
-            {{message}}
-        </div>
+                    </ul></div>
+                    <div class="row d-flex justify-content-center"><input class="btn btn-dark" type="submit" value="Sign Up"></div>
 
+                </form>
+                <br>
+
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

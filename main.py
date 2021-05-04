@@ -112,7 +112,7 @@ def index():
     context = request.context
     allPosts = DBConnect.posts_get_all()
     posts = []
-    # postid, title, body, userimage, username, tag, datetime number of comments
+
 
     for post in allPosts:
         username = DBConnect.users_get_username(post[6])
@@ -123,6 +123,20 @@ def index():
         comments = len(DBConnect.comments_from_post(post[0]))
         userImage = DBConnect.users_get_details(username)[1]
         posts.append([post[0], title, body, userImage, username, tag, datetime, comments])
+
+    starWarsPosts = []
+    ninjago = []
+    city = []
+    friends = []
+    for post in posts:
+        if 'Star' in post[5]:
+            starWarsPosts.append(post)
+        if 'Ninjago' in post[5]:
+            ninjago.append(post)
+        if 'City' in post[5]:
+            city.append(post)
+        if 'Friends' in post[5]:
+            friends.append(post)
 
     context['rows'] = posts
     return render_template('index.html', **context)
