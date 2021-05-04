@@ -19,6 +19,7 @@ dateFormat = '%d/%m/%Y'
 dateTimeFormat = dateFormat + " %H:%M"
 
 # CAPTCHA DETAILS
+captchaComplete = False
 # img number, x min, x max, y min, y max
 captchaCoords = {1: [230, 260, 39, 67],
                  2: [40, 65, 105, 136],
@@ -58,6 +59,8 @@ def make_session_permanent():
                 session.pop('username', None)
                 session.pop('bio', None)
                 session.pop('image', None)
+                global captchaComplete
+                captchaComplete = False
                 return redirect("/logIn")
         except:
             pass
@@ -74,14 +77,13 @@ def std_context(f):
         global captchaComplete
         context = {}
         request.context = context
-        if 'userid' not in session or 'userid' in session is None:
+        if 'userid' not in session or 'userid' in session is None or not captchaComplete:
             context['loggedIn'] = False
         else:
             context['loggedIn'] = True
             context['username'] = session['username']
             context['userid'] = session['userid']
         return f(*args, **kwargs)
-
     return wrapper
 
 
@@ -214,6 +216,7 @@ def setCaptcha():
 def getCaptcha():
     global mail
     global imageNumbers
+    global captchaComplete
 
     if imageNumbers:
         return json.dumps({'status': 'OK', 'image': imageNumbers.pop(0)});
@@ -222,6 +225,7 @@ def getCaptcha():
         session['username'] = DBConnect.users_get_username(session['userid'])
         session['image'] = DBConnect.users_get_details(session['username'])[1]
         session['bio'] = DBConnect.users_get_details(session['username'])[2]
+        captchaComplete = True
         return json.dumps({'status': 'all captcha complete'})
 
 
@@ -288,10 +292,12 @@ def userSignUp():
 @app.route('/userLogOut')
 @std_context
 def userLogOut():
+    global captchaComplete
     session.pop('userid', None)
     session.pop('username', None)
     session.pop('bio', None)
     session.pop('image', None)
+    captchaComplete = False
     return redirect("/logIn")
 
 # used in session auto log out modal to update last active in python
@@ -302,6 +308,8 @@ def ajaxLogOut():
     session.pop('username', None)
     session.pop('bio', None)
     session.pop('image', None)
+    global captchaComplete
+    captchaComplete = False
     flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ",
           "warning")
     return json.dumps({'status': 'OK',
