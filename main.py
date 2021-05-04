@@ -56,6 +56,8 @@ def make_session_permanent():
                     "warning")
                 session.pop('userid', None)
                 session.pop('username', None)
+                session.pop('bio', None)
+                session.pop('image', None)
                 return redirect("/logIn")
         except:
             pass
@@ -115,9 +117,52 @@ def index():
         datetime = post[3] + " " + post[4]
         title = Utilities.unencode(post[1])
         body = Utilities.unencode(post[2])
-        posts.append([title, body, username, tag, datetime])
+        comments = len(DBConnect.comments_from_post(post[0]))
+        userImage = DBConnect.users_get_details(username)[1]
+        posts.append([post[0], title, body, userImage, username, tag, datetime, comments])
+
+    starWarsPosts = []
+    ninjago = []
+    city = []
+    friends = []
+    for post in posts:
+        if 'Star' in post[5]:
+            starWarsPosts.append(post)
+        if 'Ninjago' in post[5]:
+            ninjago.append(post)
+        if 'City' in post[5]:
+            city.append(post)
+        if 'Friends' in post[5]:
+            friends.append(post)
+
     context['rows'] = posts
     return render_template('index.html', **context)
+
+
+# search for a post
+@app.route('/search', methods=['GET'])
+@std_context
+def search():
+    context = request.context
+    search_term = request.args["search_term"]
+    posts = []
+    results = DBConnect.search(search_term)
+
+    # postid, tritle, body, date, time, tag, username
+
+    for post in results[1]:
+        username = post[6]
+        tag = post[5]
+        datetime = post[3] + " " + post[4]
+        title = Utilities.unencode(post[1])
+        body = Utilities.unencode(post[2])
+        comments = len(DBConnect.comments_from_post(post[0]))
+        userImage = DBConnect.users_get_details(username)[1]
+        posts.append([post[0], title, body, userImage, username, tag, datetime, comments])
+
+    context['search_term'] = results[0]
+    context['rows'] = posts
+    return render_template('searchResults.html', **context)
 
 
 # log in to application
@@ -175,6 +220,8 @@ def getCaptcha():
     else:
         session['userid'] = DBConnect.users_get_id(mail)
         session['username'] = DBConnect.users_get_username(session['userid'])
+        session['image'] = DBConnect.users_get_details(session['username'])[1]
+        session['bio'] = DBConnect.users_get_details(session['username'])[2]
         return json.dumps({'status': 'all captcha complete'})
 
 
@@ -184,8 +231,8 @@ def validateCaptcha():
     global captchaCoords
 
     imageNumber = int(request.form['imageNumber'])
-    x = int(request.form['x'])
-    y = int(request.form['y'])
+    x = float(request.form['x'])
+    y = float(request.form['y'])
     xCorrect = False
     yCorrect = False
 
@@ -234,7 +281,7 @@ def userSignUp():
         flash(result[1], "success")
         return redirect("/")
     else:
-        flash(result[1],"warning")
+        flash(result[1], "warning")
 
     return render_template('signUp.html', **context)
 
@@ -243,6 +290,8 @@ def userSignUp():
 def userLogOut():
     session.pop('userid', None)
     session.pop('username', None)
+    session.pop('bio', None)
+    session.pop('image', None)
     return redirect("/logIn")
 
 # used in session auto log out modal to update last active in python
@@ -251,6 +300,8 @@ def userLogOut():
 def ajaxLogOut():
     session.pop('userid', None)
     session.pop('username', None)
+    session.pop('bio', None)
+    session.pop('image', None)
     flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ",
           "warning")
     return json.dumps({'status': 'OK',
@@ -303,22 +354,25 @@ def makeNewPost():
     return render_template('newPost.html', **context)
 
 
-# search for a post
-@app.route('/search', methods=['GET'])
+@app.route('/specificPost/<int:postID>')
 @std_context
-def search():
+def specificPost(postID):
+    # [Title, date, time, post text, username, post_id, logged in, [comments]]
     context = request.context
-    search_term = request.args["search_term"]
-    posts = []
-    results = DBConnect.search(search_term)
-    for item in results[1]:
-        datetime = item[3] + " " + item[4]
-        title = Utilities.unencode(item[1])
-        body = Utilities.unencode(item[2])
-        posts.append([title, body, item[6], item[5], datetime])
-    context['search_term'] = results[0]
-    context['rows'] = posts
-    return render_template('searchResults.html', **context)
+
+    if context['loggedIn']:
+        username = session['username']
+    else:
+        username = ""
+
+    context['item'] = DBConnect.posts_get_single(postID, username)
+
+    if context['item']:
+        context['posterUsername'] = context['item'][4]
+        context['image'] = DBConnect.users_get_details(context['item'][4])[1]
+        return render_template('specificPost.html', **context)
+    else:
+        error_page(404)
 
 
 # my profile
@@ -330,47 +384,8 @@ def profile():
         flash("Oops you need to log in to view that page!", "warning")
         return redirect('/')
 
-    context = request.context
-
     # Get user details
     results = DBConnect.users_get_details(session['username'])
-    context['username'] = results[0]
-    context['image'] = results[1]
-    context['bio'] = results[2]
-
-    # Get post details into array of arrays - given the username into database method
-    all_posts = DBConnect.posts_from_user(results[0]) # [Title, date, time, post text, username, post_id]
-
-    # Single array contain [Title, date, time, post text, username, post_id]
-
-    # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
-    for each in all_posts:
-        each.append(True) # [Title, date, time, post text, username, post_id, logged in]
-
-        # for each loop to append array of array of comments to end of each post array
-        comments = DBConnect.comments_from_post(each[5])
-
-        # for each loop in each comment to check if boolean of if user name = logged in user
-        for comment in comments:
-            if(comment[1] == context['username']):
-                comment.append(True)
-            else:
-                comment.append(False)
-        each.append(comments)
-
-    context['list'] = all_posts
-    return render_template('profile.html', **context)
-
-
-# other profile
-@app.route('/otherProfile/<string:username>')
-@std_context
-def otherProfile(username):
-    context = request.context
-
-
-    # Get user details
-    results = DBConnect.users_get_details(username)
     context['username'] = results[0]
     context['image'] = results[1]
     context['bio'] = results[2]
@@ -382,7 +397,48 @@ def otherProfile(username):
 
     # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
     for each in all_posts:
-        if(username == session['username']):
+        each.append(True)  # [Title, date, time, post text, username, post_id, logged in]
+
+        # for each loop to append array of array of comments to end of each post array
+        comments = DBConnect.comments_from_post(each[5])
+
+        # for each loop in each comment to check if boolean of if user name = logged in user
+        for comment in comments:
+            if (comment[1] == context['username']):
+                comment.append(True)
+            else:
+                comment.append(False)
+        each.append(comments)
+
+    context['list'] = all_posts
+    context['myProfile'] = True
+    return render_template('profile.html', **context)
+
+
+# other profile
+@app.route('/otherProfile/<string:username>')
+@std_context
+def otherProfile(username):
+    context = request.context
+
+    # Get user details
+    results = DBConnect.users_get_details(username)
+    context['username'] = results[0]
+    context['image'] = results[1]
+    context['bio'] = results[2]
+
+    # Get post details into array of arrays - given the username into database method
+    all_posts = DBConnect.posts_from_user(results[0])  # [Title, date, time, post text, username, post_id]
+
+    # Single array contain [Title, date, time, post text, username, post_id]
+    if context['loggedIn']:
+        sessionUsername = session['username']
+    else:
+        sessionUsername = ""
+    # for each loop to append the 'boolean' value to end of each post array (checking if the username is the user that is logged in)
+    for each in all_posts:
+
+        if (username == sessionUsername):
             each.append(True)  # [Title, date, time, post text, username, post_id, logged in]
         else:
             each.append(False)
@@ -392,22 +448,28 @@ def otherProfile(username):
         # for each loop in each comment to check if boolean of if user name = logged in user
         for comment in comments:
 
-            if (comment[1] == session['username']):
+            if (comment[1] == sessionUsername):
                 comment.append(True)
             else:
                 comment.append(False)
         each.append(comments)
 
     context['list'] = all_posts
+    context['myProfile'] = False
     return render_template('profile.html', **context)
 
 @app.route('/commentsBox', methods=['GET', 'POST'])
 @app.route('/otherProfile/commentsBox', methods=['GET', 'POST'])
+@app.route('/specificPost/commentsBox', methods=['GET', 'POST'])
 @std_context
 def commentsBox():
     context = request.context
     try:
-        last_url = session['urls'][len(session['urls']) - 2]
+        urlToGet = 2
+        last_url = session['urls'][len(session['urls']) - urlToGet]
+        while "static" in last_url:
+            urlToGet += 1
+            last_url = session['urls'][len(session['urls']) - urlToGet]
     except:
         last_url = None
 
@@ -436,11 +498,13 @@ def commentsBox():
         if deleted:
             flash("Post deleted succesfully!", "info")
         else:
-            flash("Sorry that post could not be deleted at this time, try again later","danger")
+            flash("Sorry that post could not be deleted at this time, try again later", "danger")
     except:
         delete = False
 
     if delete != add and last_url is not None:
+        if delete and "specificPost" in last_url:
+            return redirect('/')
         return redirect(last_url)
     else:
         flash("Uh oh! Something has gone wrong :(", "danger")
@@ -448,11 +512,17 @@ def commentsBox():
 
 @app.route('/deleteComment', methods=['GET', 'POST'])
 @app.route('/otherProfile/deleteComment', methods=['GET', 'POST'])
+@app.route('/specificPost/deleteComment', methods=['GET', 'POST'])
 @std_context
 def deleteComment():
-    context= request.context
+    context = request.context
+
     try:
-        last_url = session['urls'][len(session['urls']) - 2]
+        urlToGet = 2
+        last_url = session['urls'][len(session['urls']) - urlToGet]
+        while "static" in last_url:
+            urlToGet += 1
+            last_url = session['urls'][len(session['urls']) - urlToGet]
     except:
         last_url = None
 
@@ -468,13 +538,36 @@ def deleteComment():
         return redirect("/")
 
 
-@app.errorhandler(400) #Bad request
-@app.errorhandler(401) #Unauthorized
-@app.errorhandler(403) #Forbidden
-@app.errorhandler(404) #Not found
-@app.errorhandler(405) #Method not allowed
-@app.errorhandler(408) #Request time-out
-@app.errorhandler(500) #Server error
+@app.route('/changeImage/<image>', methods=['POST'])
+@std_context
+def changeImage(image):
+    try:
+        DBConnect.users_update_image(session['username'], image)
+        flash("Profile picture updated", "success")
+    except:
+        flash("Sorry, unable to update your picture right now!", "info")
+
+    return redirect('/profile')
+
+
+@app.route('/updateBio', methods=['POST'])
+@std_context
+def updateBio():
+    value = request.form['bio']
+    try:
+        DBConnect.users_update_bio(session['username'], value)
+        flash("Bio updated", "success")
+    except:
+        flash("Sorry, unable to update your bio right now!", "info")
+    return redirect('/profile')
+
+@app.errorhandler(400)  # Bad request
+@app.errorhandler(401)  # Unauthorized
+@app.errorhandler(403)  # Forbidden
+@app.errorhandler(404)  # Not found
+@app.errorhandler(405)  # Method not allowed
+@app.errorhandler(408)  # Request time-out
+@app.errorhandler(500)  # Server error
 @std_context
 def error_page(error):
     context = request.context
@@ -484,3 +577,9 @@ def error_page(error):
 
 if __name__ == '__main__':
     app.run()
+    app.config.update(
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='strict',
+    )
+

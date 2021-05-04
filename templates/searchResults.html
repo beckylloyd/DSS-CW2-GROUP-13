@@ -2,34 +2,70 @@
 
 {% block content %}
 <div class="container">
-    <h3>{% block title %}Search{% endblock %}</h3>
     <br>
-    <h5> Search results for {{search_term}} </h5>
+    <input
+        class="btn shadow-sm  btn-dark mt-0 mb-5"
+        action="action"
+        onclick="window.history.go(-1); return false;"
+        type="submit"
+        value="Back"
+/>
+    <br>
+    {%if rows %}
+    <h5 class="display-4"> Search results for <span class="font-italic">"{{search_term}}"</span> </h5>
+<br>
+        {%for row in rows%}
+    <div class="jumbotron shadow pt-1 pb-0 m-0">
+        <div class="container-fluid">
+            <div class="row  align-items-center align-self-center me-0 pe-0">
+                <div class="col-10">
+                    <div class="row align-items-center"><h5><a href="/specificPost/{{row[0]}}">{{row[1]}}</a></h5></div>
+                    <hr class="m-0 p-0 align-items-start">
+                    <div class="row align-items-center">{{row[2]}}</div>
+                    <div class="row align-items-center p-1"><small>TAG: {{row[5]}}</small></div>
+                </div>
+                <div class="col-2">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-5 justify-content-center align-items-center">
 
-    {%for row in rows%}
+                            <img src="/static/user_images/{{row[3]}}.png" alt="User Profile Image"
+                                 class="rounded-circle"
+                                 style="max-width: 100%">
+                        </div>
+                        <div class="col">
+                            <div class=" row row justify-content-start align-items-start">
+                                <a class="font-weight-bold" href="/otherProfile/{{row[4]}}">{{row[4]}}</a>
+                            </div>
 
-    <div class="container border border-4 border-secondary rounded-3">
-        <div class="row row-cols-3">
-            <div class="col-8 border border-3 border-top-0 border-end-0 border-start-0">
-                <h5>{{row[0]}}</h5> <!-- title -->
-            </div>
-            <div class="col-2 border border-3 border-top-0 border-end-0 border-bottom-0">
-                <p>username: {{row[2]}}</p>
-            </div>
-            <div class="col-2">
-                <p>tag: {{row[3]}}</p>
-            </div>
-            <div class="col-8">
-                <p class="border-5">{{row[1]}}</p> <!-- body -->
-            </div>
-            <div class="col-4 border border-3 border-top-0 border-end-0 border-bottom-0">
-                <p>posted on: {{row[4]}}</p>
-            </div>
 
+                            <div class="row justify-content-start align-items-start ">
+
+                                <small> {{row[6]}} </small>
+
+                            </div>
+                            <div class="row row justify-content-start align-items-start "><small>{{row[7]}}
+                                comments</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+
+
     <br>
     {%endfor%}
     <br>
+    {% else %}
+
+     <div class="jumbotron shadow ">
+        <span class="d-flex justify-content-center">
+            No search results found for <span class="font-italic">"{{search_term}}"</span>
+        </span>
+
+            </div>
+    {% endif %}
 </div>
 {% endblock %}
