@@ -19,7 +19,15 @@
         <div class="container-fluid">
             <div class="row  align-items-center align-self-center me-0 pe-0">
                 <div class="col-10">
-                    <div class="row align-items-center"><h5><a href="/specificPost/{{row[0]}}">{{row[1]}}</a></h5></div>
+                    <div class="row align-items-center">
+                           <h5>
+                            <form method="get" action="/specificPost/{{row[0]}}">
+                                <button type="submit" class="clickable m-0 p-0" style="border: none; outline: none; background: transparent;">
+                                    {{row[1]}}
+                                </button>
+                            </form>
+                        </h5>
+                    </div>
                     <hr class="m-0 p-0 align-items-start">
                     <div class="row align-items-center">{{row[2]}}</div>
                     <div class="row align-items-center p-1"><small>TAG: {{row[5]}}</small></div>
@@ -34,7 +42,13 @@
                         </div>
                         <div class="col">
                             <div class=" row row justify-content-start align-items-start">
-                                <a class="font-weight-bold" href="/otherProfile/{{row[4]}}">{{row[4]}}</a>
+                                <form method="get" action="/otherProfile/{{row[4]}}">
+                                    <button type="submit" class="clickable m-0 p-0"
+                                            style="border: none; outline: none; background: transparent;">
+
+                                <span class="font-weight-bold">
+                                    {{row[4]}}</span></button>
+                                </form>
                             </div>
 
 
