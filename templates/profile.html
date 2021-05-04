@@ -24,7 +24,8 @@
                                     data-target="#imageModal">
                                 Change picture
                             </button>
-                        </div><div class="row mt-1 justify-content-center">
+                        </div>
+                        <div class="row mt-1 justify-content-center">
                             <button type="button" class="btn btn-warning shadow-sm  my-auto mx-auto" data-toggle="modal"
                                     data-target="#bioModal">
                                 Edit bio
@@ -32,7 +33,7 @@
                         </div>
                     </div>
 
-                {% endif %}
+                    {% endif %}
                 </div>
 
             </div>
@@ -47,7 +48,11 @@
             <div class="jumbotron shadow pt-2">
                 <div class="container-fluid pt-3 pb-2 ">
                     <div id="PostTitle" class="row">
-                        <a href="/specificPost/{{item[5]}}"><h2>{{item[0]}}</h2></a>
+
+                        <form method="get" action="/specificPost/{{item[5]}}">
+                            <button type="submit" class="clickable m-0 p-0" style="border:
+                                none; outline: none; background: transparent;"><h2>{{item[0]}}</h2></button>
+                        </form>
                         <span class="font-weight-light pl-3 pt-2 justify-content-end">
                                         <small> {{item[1]}}
                                             <span class="font-italic">
@@ -56,13 +61,15 @@
                                         </small>
                                     </span>
                         <span class="font-weight-light pl-3 pt-2 justify-content-end">
-                                        <small>
-                                            <span class="font-weight-bold">
-                                                <a class="font-weight-bold"
-                                                   href="/otherProfile/{{item[4]}}">{{item[4]}}</a>
-                                            </span>
-                                        </small>
-                                    </span>
+
+                                            <form method="get" action="/otherProfile/{{item[4]}}">
+                                <button type="submit" class="clickable m-0 p-0" style="border: none;
+                                outline: none; background: transparent;">
+                                   <small> <span class="font-weight-bold">{{item[4]}}</span> </small>
+                                </button>
+                                            </form>
+
+                    </span>
                     </div>
 
                     <div id="PostMain" class="row rounded border border-white p-3 bg-light">
@@ -82,17 +89,24 @@
                             <div class="row">
                                 <div class="col-2 align-self-center">
 
-                                <div id="CommenterImg" class="col">
-                                    <div class="row d-flex justify-content-center">
-                                        <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
-                                             class="rounded-circle"
-                                             style="max-width: 35px">
+                                    <div id="CommenterImg" class="col">
+                                        <div class="row d-flex justify-content-center">
+                                            <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
+                                                 class="rounded-circle"
+                                                 style="max-width: 35px">
+                                        </div>
+                                        <div class="row d-flex justify-content-center">
+
+                                            <form method="get" action="/otherProfile/{{comment[1]}}">
+                                                <button type="submit" class="clickable m-0 p-0"
+                                                        style="border: none; outline: none; background: transparent;">
+
+
+                                            <span class="font-weight-bold">
+                                                  {{comment[1]}} </span></button>
+                                            </form>
+                                        </div>
                                     </div>
-                                    <div class="row d-flex justify-content-center">
-                                        <a class="font-weight-bold" href="/otherProfile/{{comment[1]}}">
-                                            {{comment[1]}} </a>
-                                    </div>
-                                </div>
 
                                 </div>
                                 <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
@@ -101,20 +115,22 @@
                                         {{comment[2]}}</span>
                                         </div>
 
-                                </div>
-                                <div class="row">
-                                    {% if comment[6]%}
-                                    <div class="col-12">
-                                        <div class="row mx-auto justify-content-end ">
+                                    </div>
+                                    <div class="row">
+                                        {% if comment[6]%}
+                                        <div class="col-12">
+                                            <div class="row mx-auto justify-content-end ">
 
-                                            <form action="deleteComment" method="post">
-                                            <input type="hidden" value="{{comment[5]}}" name="hidden">
-                                            <small><button type="submit" class="btn text-danger p-sm-0 mr-2"
-                                                    onclick="window.history.back()">delete
-                                            </button></small>
-                                                <br>
-                                        </form>
-                                            <span class="font-weight-light ">
+                                                <form action="deleteComment" method="post">
+                                                    <input type="hidden" value="{{comment[5]}}" name="hidden">
+                                                    <small>
+                                                        <button type="submit" class="btn text-danger p-sm-0 mr-2"
+                                                                onclick="window.history.back()">delete
+                                                        </button>
+                                                    </small>
+                                                    <br>
+                                                </form>
+                                                <span class="font-weight-light ">
 
                                                 <small> {{comment[3]}}
                                                     <span class="font-italic ">
@@ -122,11 +138,11 @@
                                                     </span>
                                                 </small>
                                             </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {%else%}
-                                    <div class="col-12">
-                                        <div class="row mx-auto justify-content-end ">
+                                        {%else%}
+                                        <div class="col-12">
+                                            <div class="row mx-auto justify-content-end ">
                                      <span class="font-weight-light ">
                                         <small> {{comment[3]}}
                                             <span class="font-italic align-bottom">
@@ -134,9 +150,9 @@
                                             </span>
                                         </small>
                                     </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {%endif%}
+                                        {%endif%}
 
                                     </div>
 
@@ -150,18 +166,18 @@
                     {% endfor %}
 
 
-                <!-- Add comments box if logged in -->
-                <form class="mt-2" action="commentsBox" method="post">
-                    <div class="form-row mb-2 mt-2">
-                        {% if loggedIn %}
-                        <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts.."
-                               name="comment">
-                        {% else %}
-                        <input type="text" class="form-control" placeholder="Please log in to add a comment."
-                               disabled>
-                        {% endif %}
-                    </div>
-                    <div class="form-row justify-content-end">
+                    <!-- Add comments box if logged in -->
+                    <form class="mt-2" action="commentsBox" method="post">
+                        <div class="form-row mb-2 mt-2">
+                            {% if loggedIn %}
+                            <input type="text" class="form-control" id="newComment" placeholder="Write your thoughts.."
+                                   name="comment">
+                            {% else %}
+                            <input type="text" class="form-control" placeholder="Please log in to add a comment."
+                                   disabled>
+                            {% endif %}
+                        </div>
+                        <div class="form-row justify-content-end">
 
                             <div class="row ">
                                 <!-- Delete button if user who posted the post was who is logged in-->

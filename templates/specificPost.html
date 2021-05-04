@@ -6,14 +6,14 @@
 
 <br>
 <div class="container-fluid">
-<div class="row"><input
+    <div class="row"><input
 
-        class="btn shadow-sm  btn-dark mt-0 mb-5"
-        action="action"
-        onclick="window.history.go(-1); return false;"
-        type="submit"
-        value="Back"
-/></div>
+            class="btn shadow-sm  btn-dark mt-0 mb-5"
+            action="action"
+            onclick="window.history.go(-1); return false;"
+            type="submit"
+            value="Back"
+    /></div>
     <div class="row">
         <div class="col-2"></div>
         <div class="col-8">
@@ -21,7 +21,13 @@
                 <img src="/static/user_images/{{image}}.png" alt="User Profile Image"
                      class="rounded-circle mx-auto d-block"
                      style="max-width: 10%">
-                <h2 class="text-center pt-0 pb-0" ><a href="/otherProfile/{{item[4]}}">{{item[4]}}</a> </h2>
+                <h2 class="text-center pt-0 pb-0">
+
+
+                    <form method="get" action="/otherProfile/{{item[4]}}">
+                                    <button type="submit" class="clickable m-0 p-0"
+                                            style="border: none; outline: none; background: transparent;">
+                                        {{item[4]}}</button></form></h2>
                 <span class="font-weight-light d-flex justify-content-center">
                                         <small> {{item[1]}}
                                                 {{item[2]}}
@@ -61,17 +67,24 @@
                             <div class="row">
                                 <div class="col-2 align-self-center">
 
-                                <div id="CommenterImg" class="col">
-                                    <div class="row d-flex justify-content-center">
-                                        <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
-                                             class="rounded-circle"
-                                             style="max-width: 35px">
+                                    <div id="CommenterImg" class="col">
+                                        <div class="row d-flex justify-content-center">
+                                            <img src="/static/user_images/{{comment[0]}}.png" alt="User Profile Image"
+                                                 class="rounded-circle"
+                                                 style="max-width: 35px">
+                                        </div>
+                                        <div class="row d-flex justify-content-center">
+
+
+                                            <form method="get" action="/otherProfile/{{comment[1]}}">
+                                                <button type="submit" class="clickable m-0 p-0"
+                                                        style="border: none; outline: none; background: transparent;">
+
+                                <span class="font-weight-bold">
+                                    {{comment[1]}} </span></button>
+                                            </form>
+                                        </div>
                                     </div>
-                                    <div class="row d-flex justify-content-center">
-                                        <a class="font-weight-bold" href="/otherProfile/{{comment[1]}}">
-                                            {{comment[1]}} </a>
-                                    </div>
-                                </div>
 
                                 </div>
                                 <div class="col-10 rounded border border-white mx-auto p-2 bg-light">
@@ -80,20 +93,22 @@
                                         {{comment[2]}}</span>
                                         </div>
 
-                                </div>
-                                <div class="row">
-                                    {% if comment[6]%}
-                                    <div class="col-12">
-                                        <div class="row mx-auto justify-content-end ">
+                                    </div>
+                                    <div class="row">
+                                        {% if comment[6]%}
+                                        <div class="col-12">
+                                            <div class="row mx-auto justify-content-end ">
 
-                                            <form action="deleteComment" method="post">
-                                            <input type="hidden" value="{{comment[5]}}" name="hidden">
-                                            <small><button type="submit" class="btn text-danger p-sm-0 mr-2"
-                                                    onclick="window.history.back()">delete
-                                            </button></small>
-                                                <br>
-                                        </form>
-                                            <span class="font-weight-light ">
+                                                <form action="deleteComment" method="post">
+                                                    <input type="hidden" value="{{comment[5]}}" name="hidden">
+                                                    <small>
+                                                        <button type="submit" class="btn text-danger p-sm-0 mr-2"
+                                                                onclick="window.history.back()">delete
+                                                        </button>
+                                                    </small>
+                                                    <br>
+                                                </form>
+                                                <span class="font-weight-light ">
 
                                                 <small> {{comment[3]}}
                                                     <span class="font-italic ">
@@ -101,11 +116,11 @@
                                                     </span>
                                                 </small>
                                             </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {%else%}
-                                    <div class="col-12">
-                                        <div class="row mx-auto justify-content-end ">
+                                        {%else%}
+                                        <div class="col-12">
+                                            <div class="row mx-auto justify-content-end ">
                                      <span class="font-weight-light ">
                                         <small> {{comment[3]}}
                                             <span class="font-italic align-bottom">
@@ -113,9 +128,9 @@
                                             </span>
                                         </small>
                                     </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {%endif%}
+                                        {%endif%}
 
                                     </div>
 
