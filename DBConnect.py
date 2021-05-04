@@ -458,7 +458,7 @@ def comments_insert(comment):
     # get them in date order
 
     all_comments = select_all("SELECT * FROM comments where user_id=?;", (str(comment[2])))
-    if all_comments is not None:
+    if len(all_comments) !=0:
 
         all_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[2] + " " + x[3], "%d/%m/%Y %H:%M"))
         # get the last posts date and time
@@ -469,7 +469,7 @@ def comments_insert(comment):
             # check time since last post
             time_diff = (datetime.now() - last_time).seconds / 60
             if (time_diff < 2):
-                # last post less than 5 mins ago, dont post
+                # last post less than 2 mins ago, dont post
                 return False
 
 
