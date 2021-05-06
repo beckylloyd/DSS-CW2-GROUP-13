@@ -20,6 +20,7 @@ dateTimeFormat = dateFormat + " %H:%M"
 
 # CAPTCHA DETAILS
 captchaComplete = False
+authenticatedIP = ''
 # img number, x min, x max, y min, y max
 captchaCoords = {1: [230, 260, 39, 67],
                  2: [40, 65, 105, 136],
@@ -43,7 +44,11 @@ locale.setlocale(locale.LC_ALL, 'en_GB')
 
 @app.before_request
 def make_session_permanent():
+    global authenticatedIP
+    global captchaComplete
     now = datetime.now()
+    print(authenticatedIP)
+    print(request.remote_addr)
     if session.get("userid") is not None:
         session['urls'].append(request.url)
         try:
@@ -51,15 +56,17 @@ def make_session_permanent():
             #print(last_active)
             delta = now - last_active
             if delta.seconds > 600:
+                authenticatedIP = ''
                 session['last_active'] = now
                 flash(
                     "Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ",
                     "warning")
+                authenticatedIP = ''
                 session.pop('userid', None)
                 session.pop('username', None)
                 session.pop('bio', None)
                 session.pop('image', None)
-                global captchaComplete
+
                 captchaComplete = False
                 return redirect("/logIn")
         except:
@@ -75,10 +82,12 @@ def std_context(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         global captchaComplete
+        global authenticatedIP
         context = {}
         request.context = context
-        if 'userid' not in session or 'userid' in session is None or not captchaComplete:
+        if 'userid' not in session or 'userid' in session is None or not captchaComplete or request.remote_addr != authenticatedIP:
             context['loggedIn'] = False
+            authenticatedIP = ''
         else:
             context['loggedIn'] = True
             context['username'] = session['username']
@@ -217,10 +226,12 @@ def getCaptcha():
     global mail
     global imageNumbers
     global captchaComplete
+    global authenticatedIP
 
     if imageNumbers:
         return json.dumps({'status': 'OK', 'image': imageNumbers.pop(0)});
     else:
+        authenticatedIP = request.remote_addr
         session['userid'] = DBConnect.users_get_id(mail)
         session['username'] = DBConnect.users_get_username(session['userid'])
         session['image'] = DBConnect.users_get_details(session['username'])[1]
@@ -293,21 +304,25 @@ def userSignUp():
 @std_context
 def userLogOut():
     global captchaComplete
+    global authenticatedIP
     session.pop('userid', None)
     session.pop('username', None)
     session.pop('bio', None)
     session.pop('image', None)
     captchaComplete = False
+    authenticatedIP = ''
     return redirect("/logIn")
 
 # used in session auto log out modal to update last active in python
 @app.route('/ajaxLogOut', methods=['GET', 'POST'])
 @std_context
 def ajaxLogOut():
+    global authenticatedIP
     session.pop('userid', None)
     session.pop('username', None)
     session.pop('bio', None)
     session.pop('image', None)
+    authenticatedIP = ''
     global captchaComplete
     captchaComplete = False
     flash("Your session has expired due to 10 minutes of inactivity, please sign back in to access your account. ",
