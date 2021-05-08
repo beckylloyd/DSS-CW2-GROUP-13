@@ -20,7 +20,7 @@ jQuery(document).ready(function ($) {
 function getCaptcha() {
     $.ajax({
         url: '/getCaptcha',
-        type: 'GET',
+        type: 'POST',
         success: function (response) {
             let res = JSON.parse(response);
             if (res.status === 'OK') {
@@ -66,6 +66,22 @@ function getImageCoords(event, img) {
 
 function buttonClick() {
     $('#captchaModal').modal('hide');
-    document.location.href = '/';
+    $.ajax({
+        url: '/userLogIn',
+        type: 'POST',
+        success: function (response) {
+            let res = JSON.parse(response);
+            if (res.status === 'error') {
+                document.location.href = '/logIn'
+            } else {
+                document.location.href = '/'
+            }
+        },
+        error: function (error) {
+            console.log(error);
+            document.location.href = '/logIn'
+        }
+    });
+
 }
 

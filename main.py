@@ -17,7 +17,7 @@ app = Flask(__name__)
 # Sets date and time format
 dateFormat = '%d/%m/%Y'
 dateTimeFormat = dateFormat + " %H:%M"
-
+temp = []
 # CAPTCHA DETAILS
 captchaComplete = False
 authenticatedIP = ''
@@ -42,18 +42,17 @@ app.secret_key = os.urandom(32)
 # Sets locale to GB for currency
 locale.setlocale(locale.LC_ALL, 'en_GB')
 
+# Checks users last active time for auto log out after 10 minutes, javascript gives warning after 9 but python will
+# always log out after 10 unless extend session is called.
 @app.before_request
 def make_session_permanent():
     global authenticatedIP
     global captchaComplete
     now = datetime.now()
-    print(authenticatedIP)
-    print(request.remote_addr)
     if session.get("userid") is not None:
         session['urls'].append(request.url)
         try:
             last_active = session['last_active']
-            #print(last_active)
             delta = now - last_active
             if delta.seconds > 600:
                 authenticatedIP = ''
@@ -71,13 +70,22 @@ def make_session_permanent():
                 return redirect("/logIn")
         except:
             pass
-
     try:
         session['last_active'] = now
     except:
         pass
 
+#Adds headers to stop click jacking attacks
+@app.after_request
+def apply_caching(response):
+    #not supported on all browsers
+    response.headers["X-Frame-Options"] = "DENY"
+    #back up for x-frame
+    response.headers["Content-Security-Policy"] = "frame-ancestors 'none'"
+    return response
 
+# Checks if a user has been authenticated, if they have completed captcha and if the request is coming from the ip
+# they signed in with. If not, it logs user out
 def std_context(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -94,22 +102,6 @@ def std_context(f):
             context['userid'] = session['userid']
         return f(*args, **kwargs)
     return wrapper
-
-
-# Function to read a csv file, add each row into a list and return the list
-def readFile(aFile):
-    with open(aFile, 'r') as inFile:
-        reader = csv.reader(inFile)
-        aList = [row for row in reader]
-    return aList
-
-
-# Function to write to a list and save back to csv file
-def writeFile(aList, aFile):
-    with open(aFile, 'w', newline='') as outFile:
-        writer = csv.writer(outFile)
-        writer.writerows(aList)
-
 
 
 # Sets default route to homepage
@@ -188,58 +180,73 @@ def logIn():
     return render_template('logIn.html', **context)
 
 
-@app.route('/userLogIn', methods=['GET', 'POST'])
+@app.route('/userLogIn', methods=['POST'])
 @std_context
 def userLogIn():
     global mail
+    global authenticatedIP
+    global captchaComplete
+    global temp
+
     context = request.context
+    #Checks if captcha has been complete, if not before searching data base get user to complete captcha
+    if not captchaComplete:
+        temp.append(request.form['email'])
+        temp.append(request.form['password'])
+        setCaptcha()
+        session['urls'] = []
+        return render_template('captcha.html', **context)
 
     context['message'] = ""
     if 'userid' not in session or session['userid'] is None:
-        email = request.form['email']
-        password = request.form['password']
+        email = temp[0]
+        password = temp[1]
+        temp = []
         result = DBConnect.login(email, password)
+        # if username/password are invalid return to log in page
         if not result[0]:
-            flash("Error logging in, please try again.", "danger")
-
+            captchaComplete = False
+            flash("Email and/or password not invalid, please try again.", "danger")
+            return json.dumps({'status': 'error'})
+        # if username/password are valid return start session, go to index
         if result[0]:
             mail = email
-            setCaptcha()
+            # setCaptcha()
             session['urls'] = []
-            return render_template('captcha.html', **context)
+            authenticatedIP = request.remote_addr
+            session['userid'] = DBConnect.users_get_id(mail)
+            session['username'] = DBConnect.users_get_username(session['userid'])
+            session['image'] = DBConnect.users_get_details(session['username'])[1]
+            session['bio'] = DBConnect.users_get_details(session['username'])[2]
+            return json.dumps({'status': 'logged in'})
     else:
         flash("Oops, a user is already logged in!")
 
-    return render_template('logIn.html', **context)
+    flash("Error logging in, please try again.", "danger")
+    return json.dumps({'status': 'error'})
 
-
+#Sets captcha to random number of images between 1-5, and picks the images at random from 1-10
 def setCaptcha():
     global numberOfImages
     global imageNumbers
     numberOfImages = random.randint(1, 5)
     imageNumbers = random.sample(range(1, 11), numberOfImages)
 
-
+#Returns the next captcha image number to show based on the setCaptcha method
 @app.route('/getCaptcha', methods=['GET', 'POST'])
 @std_context
 def getCaptcha():
     global mail
     global imageNumbers
     global captchaComplete
-    global authenticatedIP
 
     if imageNumbers:
         return json.dumps({'status': 'OK', 'image': imageNumbers.pop(0)});
     else:
-        authenticatedIP = request.remote_addr
-        session['userid'] = DBConnect.users_get_id(mail)
-        session['username'] = DBConnect.users_get_username(session['userid'])
-        session['image'] = DBConnect.users_get_details(session['username'])[1]
-        session['bio'] = DBConnect.users_get_details(session['username'])[2]
         captchaComplete = True
         return json.dumps({'status': 'all captcha complete'})
 
-
+#Checks if the coordinates on the image clicked by the user match the max/min x/y in the defined map
 @app.route('/validateCaptcha', methods=['GET', 'POST'])
 @std_context
 def validateCaptcha():
@@ -265,7 +272,7 @@ def validateCaptcha():
         return json.dumps({'status': 'validation failed'})
 
 
-# logs out user from session, called from log out button
+#Loads sign up page
 @app.route('/signUp')
 @std_context
 def signUp():
@@ -275,7 +282,7 @@ def signUp():
         return redirect('/')
     return render_template('signUp.html', **context)
 
-
+# Called when sign up button is clicked
 @app.route('/userSignUp', methods=['GET', 'POST'])
 @std_context
 def userSignUp():
@@ -300,6 +307,7 @@ def userSignUp():
 
     return render_template('signUp.html', **context)
 
+#Logs out user from session, called from log out button
 @app.route('/userLogOut')
 @std_context
 def userLogOut():
@@ -312,6 +320,7 @@ def userLogOut():
     captchaComplete = False
     authenticatedIP = ''
     return redirect("/logIn")
+
 
 # used in session auto log out modal to update last active in python
 @app.route('/ajaxLogOut', methods=['GET', 'POST'])
@@ -337,6 +346,7 @@ def ajaxLogOut():
 def ajaxExtend():
     return json.dumps({'status': 'OK', 'message': "session extended"});
 
+
 # show new post page
 @app.route('/newPost')
 @std_context
@@ -358,19 +368,16 @@ def makeNewPost():
     body = request.form['body']
     tag = request.form['tag']
 
-
     # check all inputs are filled
     if (tag == "default" or title == "" or str.isspace(title) or body == "" or str.isspace(body)):
-        flash( "Please make sure all boxes are filled :)", "warning")
+        flash("Please make sure all boxes are filled :)", "warning")
     else:
         res = DBConnect.posts_insert((title, body, tag), session['userid'])
-        if(res[0]):
+        if (res[0]):
             flash(res[1], "info")
-            return redirect("/specificPost/"+str(res[2]))
+            return redirect("/specificPost/" + str(res[2]))
         else:
             flash(res[1], "danger")
-
-
 
     # get tags to make sure the select box is populated
     context['tag_values'] = DBConnect.tags_get_all_names()
@@ -456,7 +463,7 @@ def otherProfile(username):
     # Single array contain [Title, date, time, post text, username, post_id]
     if context['loggedIn']:
         sessionUsername = session['username']
-        if(sessionUsername == username):
+        if (sessionUsername == username):
             return redirect("/profile")
     else:
         sessionUsername = ""
@@ -482,6 +489,7 @@ def otherProfile(username):
     context['list'] = all_posts
     context['myProfile'] = False
     return render_template('profile.html', **context)
+
 
 @app.route('/commentsBox', methods=['GET', 'POST'])
 @app.route('/otherProfile/commentsBox', methods=['GET', 'POST'])
@@ -535,6 +543,7 @@ def commentsBox():
         flash("Uh oh! Something has gone wrong :(", "danger")
         return redirect("/")
 
+
 @app.route('/deleteComment', methods=['GET', 'POST'])
 @app.route('/otherProfile/deleteComment', methods=['GET', 'POST'])
 @app.route('/specificPost/deleteComment', methods=['GET', 'POST'])
@@ -586,6 +595,7 @@ def updateBio():
         flash("Sorry, unable to update your bio right now!", "info")
     return redirect('/profile')
 
+
 @app.errorhandler(400)  # Bad request
 @app.errorhandler(401)  # Unauthorized
 @app.errorhandler(403)  # Forbidden
@@ -599,7 +609,6 @@ def error_page(error):
     return render_template('error.html', **context)
 
 
-
 if __name__ == '__main__':
     app.run()
     app.config.update(
@@ -607,4 +616,3 @@ if __name__ == '__main__':
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE='strict',
     )
-
