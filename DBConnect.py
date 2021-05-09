@@ -112,6 +112,7 @@ def select_all(sql_query, parameters):
         cur.execute(sql_query, parameters)
         rows = cur.fetchall()
     except Error as e:
+        print(sql_query, "\t", parameters)
         print("SELECT ALL ERROR: ", e)
         return None
     finally:
@@ -457,7 +458,7 @@ def comments_insert(comment):
     # check when the last comment was inserted by this user
     # get them in date order
 
-    all_comments = select_all("SELECT * FROM comments where user_id=?;", (str(comment[2])))
+    all_comments = select_all("SELECT * FROM comments where user_id=?;", (str(comment[2]), ))
     if len(all_comments) !=0:
 
         all_comments.sort(reverse=True, key=lambda x: datetime.strptime(x[2] + " " + x[3], "%d/%m/%Y %H:%M"))
@@ -667,3 +668,4 @@ def search(term):
             conn.close()
 
     return term, rows
+
